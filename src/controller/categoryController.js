@@ -4,8 +4,8 @@ require("dotenv").config();
 const Category = require("../model/category.Schema");
 const categoryController = express.Router();
 require("dotenv").config();
-const cloudinary = require("../Utils/cloudinary");
-const upload = require("../Utils/multer");
+const cloudinary = require("../utils/cloudinary");
+const upload = require("../utils/multer");
 const subCategory = require("../model/subCategory.Schema");
 
 categoryController.post("/create", upload.single("image"), async (req, res) => {
