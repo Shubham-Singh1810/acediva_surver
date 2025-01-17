@@ -65,7 +65,7 @@ userController.post("/send-otp", async (req, res) => {
 userController.post("/otp-verification", async (req, res) => {
   try {
     const {phoneNumber, otp} = req.body
-    const user = await User.findOne({phoneNumber:phoneNumber});
+    const user = await User.findOne({phoneNumber:phoneNumber, otp:otp});
     if(user){
       return sendResponse(res, 200, "Success", {
         message: "User logged in successfully",
@@ -79,6 +79,58 @@ userController.post("/otp-verification", async (req, res) => {
   } catch (error) {
     return sendResponse(res, 500, "Failed", {
       message: error.message || "Internal server error.",
+    });
+  }
+});
+userController.post("/create-admin", async (req, res) => {
+  try {
+    const {email, password} = req.body
+    const user = await User.findOne({email:email, password:password, role:"admin"});
+    if(user){
+      return sendResponse(res, 422, "Failed", {
+        message: "Admin already exists",
+        data: user,
+        statusCode:422
+      });
+    }
+    let admin = await User.create(req.body);
+    return sendResponse(res, 200, "Failed", {
+      message: "Admin created successfully",
+      data: admin,
+      statusCode:200
+    });
+  } catch (error) {
+    return sendResponse(res, 500, "Failed", {
+      message: error.message || "Internal server error.",
+      statusCode:500
+    });
+  }
+});
+userController.post("/admin-login", async (req, res) => {
+  try {
+    const {email, password} = req.body
+    let user = await User.findOne({email:email, password:password, role:"admin"});
+    if(user){
+      // Generate JWT token for the new user
+      const token = jwt.sign({ userId: user._id, phoneNumber: user.phoneNumber }, process.env.JWT_KEY);
+      // Store the token in the user object or return it in the response
+      user.token = token;
+      user = await User.findByIdAndUpdate(user.id, { token }, { new: true });
+      return sendResponse(res, 200, "Success", {
+        message: "Admin logged in successfully",
+        data: user,
+        statusCode:200
+      });
+    }else{
+      return sendResponse(res, 400, "Success", {
+        message: "Invalid Credintials",
+        statusCode:400
+      });
+    }
+  } catch (error) {
+    return sendResponse(res, 500, "Failed", {
+      message: error.message || "Internal server error.",
+      statusCode:500
     });
   }
 });
