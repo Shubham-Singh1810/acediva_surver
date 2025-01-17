@@ -41,6 +41,10 @@ const userSchema = mongoose.Schema({
     isEmailVerified:{
         type:Boolean,
         default:false
+    },
+    countryCode:{
+        type:String,
+        default:"91"
     }
 });
 
