@@ -39,9 +39,10 @@ categoryController.post("/list", async (req, res) => {
     const {
       searchKey = "", 
       status, 
-      pageNo = 0, 
+      pageNo=1, 
       pageCount = 10,
-      sortBy = { field: "createdAt", order: "desc" }, 
+      sortByField, 
+      sortByOrder
     } = req.body;
 
     
@@ -50,19 +51,21 @@ categoryController.post("/list", async (req, res) => {
     if (searchKey) query.name = { $regex: searchKey, $options: "i" }; 
 
     // Construct sorting object
-    const sortField = sortBy.field || "createdAt"; 
-    const sortOrder = sortBy.order === "asc" ? 1 : -1; 
+    const sortField = sortByField || "createdAt"; 
+    const sortOrder = sortByOrder === "asc" ? 1 : -1; 
     const sortOption = { [sortField]: sortOrder };
 
     // Fetch the category list
     const categoryList = await Category.find(query)
       .sort(sortOption)
       .limit(parseInt(pageCount))
-      .skip(parseInt(pageNo) * parseInt(pageCount)); 
-
+      .skip(parseInt(pageNo-1) * parseInt(pageCount)); 
+    const totalCount = await Category.countDocuments({});
+    const activeCount = await Category.countDocuments({status:true});
     sendResponse(res, 200, "Success", {
       message: "Category list retrieved successfully!",
       data: categoryList,
+      documentCount: {totalCount, activeCount, inactiveCount: totalCount-activeCount}
     });
   } catch (error) {
     console.error(error);
