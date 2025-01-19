@@ -1,32 +1,18 @@
 const express = require("express");
 const { sendResponse } = require("../utils/common");
 require("dotenv").config();
-const subCategory = require("../model/subCategory.Schema");
-const subCategoryController = express.Router();
+const installation = require("../model/installation.Schema");
+const installationController = express.Router();
 require("dotenv").config();
 const cloudinary = require("../utils/cloudinary");
 const upload = require("../utils/multer");
-const service = require("../model/service.Schema");
-const repair = require("../model/repair.Schema");
-const installation = require("../model/installation.Schema");
 
-subCategoryController.post("/create", upload.single("image"), async (req, res) => {
+installationController.post("/create",  async (req, res) => {
   try {
-    let obj;
-    if (req.file) {
-      let image = await cloudinary.uploader.upload(req.file.path, function (err, result) {
-        if (err) {
-          return err;
-        } else {
-          return result;
-        }
-      });
-      obj = { ...req.body, image: image.url };
-    }
-    const subCategoryCreated = await subCategory.create(obj);
+    const repairCreated = await installation.create(req.body);
     sendResponse(res, 200, "Success", {
-      message: "Sub Category created successfully!",
-      data: subCategoryCreated,
+      message: "Installation record created successfully!",
+      data: repairCreated,
     });
   } catch (error) {
     console.error(error);
@@ -36,7 +22,7 @@ subCategoryController.post("/create", upload.single("image"), async (req, res) =
   }
 });
 
-subCategoryController.post("/list", async (req, res) => {
+installationController.post("/list", async (req, res) => {
   try {
     const {
       searchKey = "",
@@ -74,7 +60,7 @@ subCategoryController.post("/list", async (req, res) => {
   }
 });
 
-subCategoryController.put("/update", upload.single("image"), async (req, res) => {
+installationController.put("/update", upload.single("image"), async (req, res) => {
   try {
     const id = req.body.id;
 
@@ -124,7 +110,7 @@ subCategoryController.put("/update", upload.single("image"), async (req, res) =>
   }
 });
 
-subCategoryController.delete("/delete/:id", async (req, res) => {
+installationController.delete("/delete/:id", async (req, res) => {
   try {
     const { id } = req.params;
     console.log(id);
@@ -164,24 +150,4 @@ subCategoryController.delete("/delete/:id", async (req, res) => {
   }
 });
 
-subCategoryController.get("/details/:id",  async (req, res) => {
-  try {
-    const { id } = req.params
-    const subCategoryDetails = await subCategory.findOne({_id:id});
-    const serviceList = await service.find({subCategoryId:id});
-    const repairList = await repair.find({subCategoryId:id});
-    const installationList = await installation.find({subCategoryId:id});
-
-    sendResponse(res, 200, "Success", {
-      message: "Services of sub category retrived successfully!",
-      data:{subCategoryDetails, serviceList, repairList, installationList},
-    });
-  } catch (error) {
-    console.error(error);
-    sendResponse(res, 500, "Failed", {
-      message: error.message || "Internal server error",
-    });
-  }
-});
-
-module.exports = subCategoryController;
+module.exports = installationController;

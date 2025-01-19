@@ -5,6 +5,7 @@ const categoryController = require("./controller/categoryController");
 const subCategoryController = require("./controller/subCategoryController");
 const serviceController = require("./controller/serviceController");
 const repairController = require("./controller/repairController");
+const installationController = require("./controller/installationController");
 
 
 router.use("/user", userController);
@@ -12,5 +13,6 @@ router.use("/category", categoryController);
 router.use("/sub-category", subCategoryController);
 router.use("/service", serviceController);
 router.use("/repair", repairController);
+router.use("/installation", installationController);
 
 module.exports = router;
