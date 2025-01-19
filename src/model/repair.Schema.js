@@ -2,7 +2,7 @@ const mongoose = require("mongoose");
 const timestamps = require("mongoose-timestamp");
 const { type } = require("os");
 
-const serviceSchema = mongoose.Schema({
+const repairSchema = mongoose.Schema({
   name: {
     type: String,
     required: true,
@@ -32,5 +32,5 @@ const serviceSchema = mongoose.Schema({
   description: [{ type: String }],
 });
 
-serviceSchema.plugin(timestamps);
-module.exports = mongoose.model("service", serviceSchema);
+repairSchema.plugin(timestamps);
+module.exports = mongoose.model("repair", repairSchema);
