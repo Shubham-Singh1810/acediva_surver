@@ -39,32 +39,38 @@ subCategoryController.post("/create", upload.single("image"), async (req, res) =
 subCategoryController.post("/list", async (req, res) => {
   try {
     const {
-      searchKey = "",
-      status,
-      pageNo = 0,
+      searchKey = "", 
+      status, 
+      pageNo=1, 
       pageCount = 10,
-      sortBy = { field: "createdAt", order: "desc" },
+      sortByField, 
+      sortByOrder
     } = req.body;
 
+    
     const query = {};
-    if (status) query.status = status;
-    if (searchKey) query.name = { $regex: searchKey, $options: "i" };
+    if (status) query.status = status; 
+    if (searchKey) query.name = { $regex: searchKey, $options: "i" }; 
 
     // Construct sorting object
-    const sortField = sortBy.field || "createdAt";
-    const sortOrder = sortBy.order === "asc" ? 1 : -1;
+    const sortField = sortByField || "createdAt"; 
+    const sortOrder = sortByOrder === "asc" ? 1 : -1; 
     const sortOption = { [sortField]: sortOrder };
 
     // Fetch the category list
-    const subCategoryList = await subCategory
-      .find(query)
+    const subCategoryList = await subCategory.find(query)
       .sort(sortOption)
       .limit(parseInt(pageCount))
-      .skip(parseInt(pageNo) * parseInt(pageCount));
-
+      .skip(parseInt(pageNo-1) * parseInt(pageCount)).populate({
+        path: "categoryId", // Field to populate
+        // select: "name description", // Specify the fields you want from `categoryId`
+      });
+    const totalCount = await subCategory.countDocuments({});
+    const activeCount = await subCategory.countDocuments({status:true});
     sendResponse(res, 200, "Success", {
       message: "Sub Category list retrieved successfully!",
       data: subCategoryList,
+      documentCount: {totalCount, activeCount, inactiveCount: totalCount-activeCount}
     });
   } catch (error) {
     console.error(error);

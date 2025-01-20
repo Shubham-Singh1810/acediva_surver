@@ -25,11 +25,13 @@ categoryController.post("/create", upload.single("image"), async (req, res) => {
     sendResponse(res, 200, "Success", {
       message: "Category created successfully!",
       data: CategoryCreated,
+      statusCode:200
     });
   } catch (error) {
     console.error(error);
     sendResponse(res, 500, "Failed", {
       message: error.message || "Internal server error",
+      statusCode:500
     });
   }
 });
@@ -77,13 +79,14 @@ categoryController.post("/list", async (req, res) => {
 
 categoryController.put("/update", upload.single("image"), async (req, res) => {
     try {
-      const  id  = req.body.id;
+      const  id  = req.body._id;
   
       // Find the category by ID
       const category = await Category.findById(id);
       if (!category) {
         return sendResponse(res, 404, "Failed", {
           message: "Category not found",
+          statusCode:403
         });
       }
   
@@ -116,11 +119,13 @@ categoryController.put("/update", upload.single("image"), async (req, res) => {
       sendResponse(res, 200, "Success", {
         message: "Category updated successfully!",
         data: updatedCategory,
+        statusCode:200
       });
     } catch (error) {
       console.error(error);
       sendResponse(res, 500, "Failed", {
         message: error.message || "Internal server error",
+        statusCode:500
       });
     }
 });
