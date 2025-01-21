@@ -10,6 +10,7 @@ const request = require("request");
 const axios = require("axios");
 require("dotenv").config();
 const jwt = require("jsonwebtoken");
+const upload = require("../utils/multer");
 
 userController.post("/send-otp", async (req, res) => {
   try {
@@ -201,7 +202,6 @@ userController.post("/add-wish-list", async (req, res) => {
     });
   }
 });
-
 userController.get("/get-wish-list/:userId", async (req, res) => {
   try {
     const { userId } = req.params;
@@ -235,7 +235,7 @@ userController.get("/get-wish-list/:userId", async (req, res) => {
       const Model = modelMapping[item.modelType]; // Dynamically select the model
       if (Model) {
         // Find the model item and populate it with the details
-        const populatedItem = await Model.findById(item.modelId).select('name description');
+        const populatedItem = await Model.findById(item.modelId)
         return {
           id: item._id,  // Adding user-friendly field names
           modelId: item.modelId,
@@ -243,7 +243,10 @@ userController.get("/get-wish-list/:userId", async (req, res) => {
           modelDetails: populatedItem ? {
             id: populatedItem._id,
             name: populatedItem.name,
-            description: populatedItem.description
+            description: populatedItem.description,
+            rate:populatedItem.rate,
+            distance:populatedItem.distance,
+            status:populatedItem.status
           } : null
         };
       }
@@ -263,7 +266,71 @@ userController.get("/get-wish-list/:userId", async (req, res) => {
     });
   }
 });
+userController.put("/update", upload.single("image"), async (req, res) => {
+  try {
+    const id = req.body._id;
 
+    // Find the category by ID
+    const userData = await User.findById(id);
+    if (!userData) {
+      return sendResponse(res, 404, "Failed", {
+        message: "User not found",
+      });
+    }
 
+    let updatedData = { ...req.body };
+
+    // If a new image is uploaded
+    if (req.file) {
+      // Delete the old image from Cloudinary
+      if (userData.image) {
+        const publicId = User.image.split("/").pop().split(".")[0];
+        await cloudinary.uploader.destroy(publicId, (error, result) => {
+          if (error) {
+            console.error("Error deleting old image from Cloudinary:", error);
+          } else {
+            console.log("Old image deleted from Cloudinary:", result);
+          }
+        });
+      }
+
+      // Upload the new image to Cloudinary
+      const image = await cloudinary.uploader.upload(req.file.path);
+      updatedData.image = image.url;
+    }
+
+    // Update the category in the database
+    const updatedUserData = await User.findByIdAndUpdate(id, updatedData, {
+      new: true, // Return the updated document
+    });
+
+    sendResponse(res, 200, "Success", {
+      message: "User updated successfully!",
+      data: updatedUserData,
+      statusCode:200
+    });
+  } catch (error) {
+    console.error(error);
+    sendResponse(res, 500, "Failed", {
+      message: error.message || "Internal server error",
+    });
+  }
+});
+userController.get("/details/:id",  async (req, res) => {
+  try {
+    const {id} = req.params;
+    const userData = await User.findOne({_id:id});
+    sendResponse(res, 200, "Success", {
+      message: "User details retrived successfully!",
+      data: userData,
+      statusCode:200
+    });
+  } catch (error) {
+    console.error(error);
+    sendResponse(res, 500, "Failed", {
+      message: error.message || "Internal server error",
+    });
+  }
+});
 
 module.exports = userController;
