@@ -2,6 +2,9 @@ const express = require("express");
 const { sendResponse, generateOTP } = require("../utils/common");
 require("dotenv").config();
 const User = require("../model/user.Schema");
+const repair = require("../model/repair.Schema");
+const service = require("../model/service.Schema");
+const installation = require("../model/installation.Schema");
 const userController = express.Router();
 const request = require("request");
 const axios = require("axios");
@@ -134,4 +137,126 @@ userController.post("/admin-login", async (req, res) => {
     });
   }
 });
+userController.post("/add-wish-list", async (req, res) => {
+  try {
+    const { userId, modelId, modelType } = req.body;
+
+    // Validate input
+    if (!userId || !modelId || !modelType) {
+      return sendResponse(res, 400, "Failed", {
+        message: "userId, modelId, and modelType are required.",
+        statusCode: 400,
+      });
+    }
+
+    // Check if the modelType is valid
+    const validModelTypes = ["service", "repair", "installation"];
+    if (!validModelTypes.includes(modelType)) {
+      return sendResponse(res, 400, "Failed", {
+        message: `Invalid modelType. Valid types are: ${validModelTypes.join(", ")}`,
+        statusCode: 400,
+      });
+    }
+
+    // Find the user by ID
+    let user = await User.findById(userId);
+    if (!user) {
+      return sendResponse(res, 404, "Failed", {
+        message: "User not found.",
+        statusCode: 404,
+      });
+    }
+
+    // Add the item to the wishList if it doesn't already exist
+    const alreadyExists = user.wishList.some(
+      (item) => item.modelId.toString() === modelId && item.modelType === modelType
+    );
+
+    if (alreadyExists) {
+      return sendResponse(res, 400, "Failed", {
+        message: "This item is already in the wish list.",
+        statusCode: 400,
+      });
+    }
+
+    user.wishList.push({ modelId, modelType });
+    await user.save();
+
+    return sendResponse(res, 200, "Success", {
+      message: "Item added to wish list successfully.",
+      data: user.wishList,
+      statusCode: 200,
+    });
+  } catch (error) {
+    console.error(error);
+    return sendResponse(res, 500, "Failed", {
+      message: error.message || "Internal server error.",
+      statusCode: 500,
+    });
+  }
+});
+userController.get("/get-wish-list/:userId", async (req, res) => {
+  try {
+    const { userId } = req.params;
+
+    // Validate input
+    if (!userId) {
+      return sendResponse(res, 400, "Failed", {
+        message: "userId is required.",
+        statusCode: 400,
+      });
+    }
+
+    // Find the user
+    const user = await User.findById(userId);
+    if (!user) {
+      return sendResponse(res, 404, "Failed", {
+        message: "User not found.",
+        statusCode: 404,
+      });
+    }
+
+    // Define the model mapping for dynamic population
+    const modelMapping = {
+      service: service,
+      repair: repair,
+      installation: installation,
+    };
+
+    // Populate the wish list with model details based on modelType
+    const populatedWishList = await Promise.all(user.wishList.map(async (item) => {
+      const Model = modelMapping[item.modelType]; // Dynamically select the model
+      if (Model) {
+        // Find the model item and populate it with the details
+        const populatedItem = await Model.findById(item.modelId).select('name description');
+        return {
+          id: item._id,  // Adding user-friendly field names
+          modelId: item.modelId,
+          modelType: item.modelType,
+          modelDetails: populatedItem ? {
+            id: populatedItem._id,
+            name: populatedItem.name,
+            description: populatedItem.description
+          } : null
+        };
+      }
+      return item; // If no model found, return as is
+    }));
+
+    return sendResponse(res, 200, "Success", {
+      message: "Wish list retrieved successfully.",
+      data: populatedWishList,
+      statusCode: 200,
+    });
+  } catch (error) {
+    console.error(error);
+    return sendResponse(res, 500, "Failed", {
+      message: error.message || "Internal server error.",
+      statusCode: 500,
+    });
+  }
+});
+
+
+
 module.exports = userController;

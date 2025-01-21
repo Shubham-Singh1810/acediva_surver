@@ -38,7 +38,6 @@ bannerController.post("/create", upload.single("image"), async (req, res) => {
 
 bannerController.post("/list",  async (req, res) => {
     try {
-      
       const BannerList = await Banner.find(req.body);
       sendResponse(res, 200, "Success", {
         message: "Banner list retrived successfully!",
@@ -52,7 +51,7 @@ bannerController.post("/list",  async (req, res) => {
         statusCode:500
       });
     }
-  });
+});
 
 
 module.exports = bannerController;

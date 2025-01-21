@@ -27,6 +27,7 @@ subCategoryController.post("/create", upload.single("image"), async (req, res) =
     sendResponse(res, 200, "Success", {
       message: "Sub Category created successfully!",
       data: subCategoryCreated,
+      statusCode:200
     });
   } catch (error) {
     console.error(error);
@@ -36,6 +37,49 @@ subCategoryController.post("/create", upload.single("image"), async (req, res) =
   }
 });
 
+// subCategoryController.post("/list", async (req, res) => {
+//   try {
+//     const {
+//       searchKey = "", 
+//       status, 
+//       pageNo=1, 
+//       pageCount = 10,
+//       sortByField, 
+//       sortByOrder
+//     } = req.body;
+
+    
+//     const query = {};
+//     if (status) query.status = status; 
+//     if (searchKey) query.name = { $regex: searchKey, $options: "i" }; 
+
+//     // Construct sorting object
+//     const sortField = sortByField || "createdAt"; 
+//     const sortOrder = sortByOrder === "asc" ? 1 : -1; 
+//     const sortOption = { [sortField]: sortOrder };
+
+//     // Fetch the category list
+//     const subCategoryList = await subCategory.find(query)
+//       .sort(sortOption)
+//       .limit(parseInt(pageCount))
+//       .skip(parseInt(pageNo-1) * parseInt(pageCount)).populate({
+//         path: "categoryId", // Field to populate
+//         // select: "name description", // Specify the fields you want from `categoryId`
+//       });
+//     const totalCount = await subCategory.countDocuments({});
+//     const activeCount = await subCategory.countDocuments({status:true});
+//     sendResponse(res, 200, "Success", {
+//       message: "Sub Category list retrieved successfully!",
+//       data: subCategoryList,
+//       documentCount: {totalCount, activeCount, inactiveCount: totalCount-activeCount}
+//     });
+//   } catch (error) {
+//     console.error(error);
+//     sendResponse(res, 500, "Failed", {
+//       message: error.message || "Internal server error",
+//     });
+//   }
+// });
 subCategoryController.post("/list", async (req, res) => {
   try {
     const {
@@ -61,16 +105,19 @@ subCategoryController.post("/list", async (req, res) => {
     const subCategoryList = await subCategory.find(query)
       .sort(sortOption)
       .limit(parseInt(pageCount))
-      .skip(parseInt(pageNo-1) * parseInt(pageCount)).populate({
+      .skip(parseInt(pageNo-1) * parseInt(pageCount))
+      .populate({
         path: "categoryId", // Field to populate
-        // select: "name description", // Specify the fields you want from `categoryId`
-      });
+        select: "name description", // Specify the fields to retrieve from the `category` collection
+      })
     const totalCount = await subCategory.countDocuments({});
     const activeCount = await subCategory.countDocuments({status:true});
     sendResponse(res, 200, "Success", {
       message: "Sub Category list retrieved successfully!",
       data: subCategoryList,
-      documentCount: {totalCount, activeCount, inactiveCount: totalCount-activeCount}
+      documentCount: {totalCount, activeCount, inactiveCount: totalCount-activeCount},
+      statusCode:200
+
     });
   } catch (error) {
     console.error(error);
@@ -82,11 +129,11 @@ subCategoryController.post("/list", async (req, res) => {
 
 subCategoryController.put("/update", upload.single("image"), async (req, res) => {
   try {
-    const id = req.body.id;
+    const id = req.body._id;
 
     // Find the category by ID
-    const subCategory = await subCategory.findById(id);
-    if (!subCategory) {
+    const subCategoryData = await subCategory.findById(id);
+    if (!subCategoryData) {
       return sendResponse(res, 404, "Failed", {
         message: "Sub Category not found",
       });
@@ -97,7 +144,7 @@ subCategoryController.put("/update", upload.single("image"), async (req, res) =>
     // If a new image is uploaded
     if (req.file) {
       // Delete the old image from Cloudinary
-      if (subCategory.image) {
+      if (subCategoryData.image) {
         const publicId = subCategory.image.split("/").pop().split(".")[0];
         await cloudinary.uploader.destroy(publicId, (error, result) => {
           if (error) {
@@ -121,6 +168,7 @@ subCategoryController.put("/update", upload.single("image"), async (req, res) =>
     sendResponse(res, 200, "Success", {
       message: "Sub Category updated successfully!",
       data: updatedSubCategory,
+      statusCode:200
     });
   } catch (error) {
     console.error(error);
@@ -161,6 +209,7 @@ subCategoryController.delete("/delete/:id", async (req, res) => {
 
     sendResponse(res, 200, "Success", {
       message: "Sub Category and associated image deleted successfully!",
+      statusCode:200
     });
   } catch (error) {
     console.error(error);
