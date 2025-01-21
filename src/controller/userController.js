@@ -167,26 +167,32 @@ userController.post("/add-wish-list", async (req, res) => {
       });
     }
 
-    // Add the item to the wishList if it doesn't already exist
-    const alreadyExists = user.wishList.some(
+    // Check if the item is already in the wish list
+    const itemIndex = user.wishList.findIndex(
       (item) => item.modelId.toString() === modelId && item.modelType === modelType
     );
 
-    if (alreadyExists) {
-      return sendResponse(res, 400, "Failed", {
-        message: "This item is already in the wish list.",
-        statusCode: 400,
+    if (itemIndex !== -1) {
+      // Remove the item if it exists
+      user.wishList.splice(itemIndex, 1);
+      await user.save();
+
+      return sendResponse(res, 200, "Success", {
+        message: "Item removed from wish list successfully.",
+        data: user.wishList,
+        statusCode: 200,
+      });
+    } else {
+      // Add the item to the wish list if it doesn't exist
+      user.wishList.push({ modelId, modelType });
+      await user.save();
+
+      return sendResponse(res, 200, "Success", {
+        message: "Item added to wish list successfully.",
+        data: user.wishList,
+        statusCode: 200,
       });
     }
-
-    user.wishList.push({ modelId, modelType });
-    await user.save();
-
-    return sendResponse(res, 200, "Success", {
-      message: "Item added to wish list successfully.",
-      data: user.wishList,
-      statusCode: 200,
-    });
   } catch (error) {
     console.error(error);
     return sendResponse(res, 500, "Failed", {
@@ -195,6 +201,7 @@ userController.post("/add-wish-list", async (req, res) => {
     });
   }
 });
+
 userController.get("/get-wish-list/:userId", async (req, res) => {
   try {
     const { userId } = req.params;
