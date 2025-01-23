@@ -19,6 +19,7 @@ userController.post("/send-otp", async (req, res) => {
     if (!phoneNumber) {
       return sendResponse(res, 400, "Failed", {
         message: "Phone number is required.",
+        statusCode:400
       });
     }
     // Generate OTP
@@ -52,10 +53,12 @@ userController.post("/send-otp", async (req, res) => {
       return sendResponse(res, 200, "Success", {
         message: "OTP send successfully",
         data: user,
+        statusCode:200
       });
     } else {
       return sendResponse(res, 422, "Failed", {
         message: "Unable to send OTP",
+        statusCode:200
       });
     }
   } catch (error) {

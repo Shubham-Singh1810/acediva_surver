@@ -13,6 +13,9 @@ const subCategorySchema = mongoose.Schema({
     image: {
         type: String,
     },
+    banner:{
+        type:String,
+    },
     categoryId: {
         type: mongoose.Schema.Types.ObjectId,
         ref: "Category",

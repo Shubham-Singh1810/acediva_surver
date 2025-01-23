@@ -7,6 +7,10 @@ const serviceSchema = mongoose.Schema({
     type: String,
     required: true,
   },
+  image: {
+    type: String,
+    required: true,
+  },
   rate: {
     type: String,
     required: true,
@@ -30,6 +34,26 @@ const serviceSchema = mongoose.Schema({
     required: true,
   },
   description: [{ type: String }],
+  price: {
+    type: Number,
+    required: true,
+  },
+  howItWorks : [
+    {
+      title:{
+        type:String,
+        required: true,
+      },
+      subTitle:{
+        type:String,
+        required:true,
+      },
+      image:{
+        type:String,
+        required:true,
+      }
+    }
+  ]
 });
 
 serviceSchema.plugin(timestamps);
