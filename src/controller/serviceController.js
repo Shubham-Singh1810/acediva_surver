@@ -6,6 +6,8 @@ const serviceController = express.Router();
 require("dotenv").config();
 const cloudinary = require("../utils/cloudinary");
 const upload = require("../utils/multer");
+const repair = require("../model/repair.Schema");
+const installation = require("../model/installation.Schema");
 
 serviceController.post("/create",  async (req, res) => {
   try {
@@ -149,23 +151,43 @@ serviceController.delete("/delete/:id", async (req, res) => {
     });
   }
 });
-serviceController.get("/details/:id", async (req, res) => {
+serviceController.post("/details", async (req, res) => {
   try {
-    const { id } = req.params;
-    // Find the category by ID
-    const serviceItem = await service.findById(id);
-    if (!serviceItem) {
-      return sendResponse(res, 404, "Failed", {
-        message: "Service not found",
+    const {id, serviceType} = req.body
+    if(!id || !serviceType){
+      sendResponse(res, 200, "Success", {
+        message: "Id aur service type not provided",
+        statusCode:403
       });
+      return
     }
-
-
-    sendResponse(res, 200, "Success", {
-      message: "Service details fetched successfully",
-      data :serviceItem,
-      statusCode:200
-    });
+    if(serviceType=="service"){
+      let response = await service.findOne({_id:id})
+      sendResponse(res, 200, "Success", {
+        message: "Service details fetched successfully",
+        data :response,
+        statusCode:200
+      });
+      return;
+    }
+    if(serviceType=="repair"){
+      let response = await repair.findOne({_id:id})
+      sendResponse(res, 200, "Success", {
+        message: "Service details fetched successfully",
+        data :response,
+        statusCode:200
+      });
+      return;
+    }
+    if(serviceType=="installation"){
+      let response = await installation.findOne({_id:id})
+      sendResponse(res, 200, "Success", {
+        message: "Service details fetched successfully",
+        data :response,
+        statusCode:200
+      });
+      return;
+    }
   } catch (error) {
     console.error(error);
     sendResponse(res, 500, "Failed", {
