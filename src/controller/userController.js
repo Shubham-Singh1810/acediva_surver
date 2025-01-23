@@ -77,15 +77,18 @@ userController.post("/otp-verification", async (req, res) => {
       return sendResponse(res, 200, "Success", {
         message: "User logged in successfully",
         data: user,
+        statusCode:200
       });
     }else{
       return sendResponse(res, 422, "Failed", {
         message: "Wrong OTP",
+        statusCode:422
       });
     }
   } catch (error) {
     return sendResponse(res, 500, "Failed", {
       message: error.message || "Internal server error.",
+      statusCode:500
     });
   }
 });

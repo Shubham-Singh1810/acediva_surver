@@ -67,12 +67,14 @@ categoryController.post("/list", async (req, res) => {
     sendResponse(res, 200, "Success", {
       message: "Category list retrieved successfully!",
       data: categoryList,
-      documentCount: {totalCount, activeCount, inactiveCount: totalCount-activeCount}
+      documentCount: {totalCount, activeCount, inactiveCount: totalCount-activeCount},
+      statusCode:200
     });
   } catch (error) {
     console.error(error);
     sendResponse(res, 500, "Failed", {
       message: error.message || "Internal server error",
+      statusCode:500
     });
   }
 });
