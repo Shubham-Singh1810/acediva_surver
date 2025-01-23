@@ -149,5 +149,29 @@ serviceController.delete("/delete/:id", async (req, res) => {
     });
   }
 });
+serviceController.get("/details/:id", async (req, res) => {
+  try {
+    const { id } = req.params;
+    // Find the category by ID
+    const serviceItem = await service.findById(id);
+    if (!serviceItem) {
+      return sendResponse(res, 404, "Failed", {
+        message: "Service not found",
+      });
+    }
+
+
+    sendResponse(res, 200, "Success", {
+      message: "Service details fetched successfully",
+      data :serviceItem,
+      statusCode:200
+    });
+  } catch (error) {
+    console.error(error);
+    sendResponse(res, 500, "Failed", {
+      message: error.message || "Internal server error",
+    });
+  }
+});
 
 module.exports = serviceController;
