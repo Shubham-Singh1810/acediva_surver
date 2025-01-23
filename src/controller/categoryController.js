@@ -180,11 +180,13 @@ categoryController.get("/details/:id",  async (req, res) => {
     sendResponse(res, 200, "Success", {
       message: "Category with sub category retrived successfully!",
       data:{CategoryDetails, SubCategoryList},
+      statusCode:200
     });
   } catch (error) {
     console.error(error);
     sendResponse(res, 500, "Failed", {
       message: error.message || "Internal server error",
+      statusCode:500
     });
   }
 });
