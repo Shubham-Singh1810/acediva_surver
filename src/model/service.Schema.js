@@ -7,7 +7,7 @@ const serviceSchema = mongoose.Schema({
     type: String,
     required: true,
   },
-  image: {
+  banner: {
     type: String,
     required: true,
   },

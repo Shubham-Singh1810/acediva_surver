@@ -2,32 +2,15 @@ const mongoose = require("mongoose");
 const timestamps = require("mongoose-timestamp");
 const { type } = require("os");
 
-const bookingSchema = mongoose.Schema({
-  location: {
+const addressSchema = mongoose.Schema({
+  firstName: {
     type: String,
     required: true,
   },
-  date: {
+  lastName: {
     type: String,
     required: true,
   },
-  time: {
-    type: String,
-    default: true,
-  },
-  serviceId: {
-    type: String,
-    required: true,
-  },
-  serviceType: {
-    type: String,
-    required: true,
-  },
-  userId: {
-    type: mongoose.Schema.Types.ObjectId,
-    ref: "User",
-    required: true,
-  }, 
   addressLine1: {
     type: String,
     required: true,
@@ -36,7 +19,7 @@ const bookingSchema = mongoose.Schema({
     type: String,
     required: true,
   },
-  landmark: {
+  landMark: {
     type: String,
     required: true,
   },
@@ -48,15 +31,16 @@ const bookingSchema = mongoose.Schema({
     type: Number,
     required: true,
   },
-  tipAmount: {
+  phoneNumber: {
     type: Number,
     required: true,
   },
-  modeOfPayment: {
-    type: String,
+  userId: {
+    type: mongoose.Schema.Types.ObjectId,
+    ref: "User",
     required: true,
   },
 });
 
-bookingSchema.plugin(timestamps);
-module.exports = mongoose.model("Booking", bookingSchema);
+addressSchema.plugin(timestamps);
+module.exports = mongoose.model("Address", addressSchema);

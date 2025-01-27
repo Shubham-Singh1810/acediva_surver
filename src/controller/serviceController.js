@@ -9,7 +9,7 @@ const upload = require("../utils/multer");
 const repair = require("../model/repair.Schema");
 const installation = require("../model/installation.Schema");
 
-serviceController.post("/create",  async (req, res) => {
+serviceController.post("/create", async (req, res) => {
   try {
     const serviceCreated = await service.create(req.body);
     sendResponse(res, 200, "Success", {
@@ -153,38 +153,38 @@ serviceController.delete("/delete/:id", async (req, res) => {
 });
 serviceController.post("/details", async (req, res) => {
   try {
-    const {id, serviceType} = req.body
-    if(!id || !serviceType){
+    const { id, serviceType } = req.body;
+    if (!id || !serviceType) {
       sendResponse(res, 200, "Success", {
         message: "Id aur service type not provided",
-        statusCode:403
-      });
-      return
-    }
-    if(serviceType=="service"){
-      let response = await service.findOne({_id:id})
-      sendResponse(res, 200, "Success", {
-        message: "Service details fetched successfully",
-        data :response,
-        statusCode:200
+        statusCode: 403,
       });
       return;
     }
-    if(serviceType=="repair"){
-      let response = await repair.findOne({_id:id})
+    if (serviceType == "service") {
+      let response = await service.findOne({ _id: id });
       sendResponse(res, 200, "Success", {
         message: "Service details fetched successfully",
-        data :response,
-        statusCode:200
+        data:response,
+        statusCode: 200,
       });
       return;
     }
-    if(serviceType=="installation"){
-      let response = await installation.findOne({_id:id})
+    if (serviceType == "repair") {
+      let response = await repair.findOne({ _id: id });
       sendResponse(res, 200, "Success", {
         message: "Service details fetched successfully",
-        data :response,
-        statusCode:200
+        data: response,
+        statusCode: 200,
+      });
+      return;
+    }
+    if (serviceType == "installation") {
+      let response = await installation.findOne({ _id: id });
+      sendResponse(res, 200, "Success", {
+        message: "Service details fetched successfully",
+        data: response,
+        statusCode: 200,
       });
       return;
     }
