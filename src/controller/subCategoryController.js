@@ -9,7 +9,7 @@ const upload = require("../utils/multer");
 const service = require("../model/service.Schema");
 const repair = require("../model/repair.Schema");
 const installation = require("../model/installation.Schema");
-
+const auth = require("../utils/auth");
 subCategoryController.post("/create", upload.single("image"), async (req, res) => {
   try {
     let obj;
@@ -36,50 +36,6 @@ subCategoryController.post("/create", upload.single("image"), async (req, res) =
     });
   }
 });
-
-// subCategoryController.post("/list", async (req, res) => {
-//   try {
-//     const {
-//       searchKey = "", 
-//       status, 
-//       pageNo=1, 
-//       pageCount = 10,
-//       sortByField, 
-//       sortByOrder
-//     } = req.body;
-
-    
-//     const query = {};
-//     if (status) query.status = status; 
-//     if (searchKey) query.name = { $regex: searchKey, $options: "i" }; 
-
-//     // Construct sorting object
-//     const sortField = sortByField || "createdAt"; 
-//     const sortOrder = sortByOrder === "asc" ? 1 : -1; 
-//     const sortOption = { [sortField]: sortOrder };
-
-//     // Fetch the category list
-//     const subCategoryList = await subCategory.find(query)
-//       .sort(sortOption)
-//       .limit(parseInt(pageCount))
-//       .skip(parseInt(pageNo-1) * parseInt(pageCount)).populate({
-//         path: "categoryId", // Field to populate
-//         // select: "name description", // Specify the fields you want from `categoryId`
-//       });
-//     const totalCount = await subCategory.countDocuments({});
-//     const activeCount = await subCategory.countDocuments({status:true});
-//     sendResponse(res, 200, "Success", {
-//       message: "Sub Category list retrieved successfully!",
-//       data: subCategoryList,
-//       documentCount: {totalCount, activeCount, inactiveCount: totalCount-activeCount}
-//     });
-//   } catch (error) {
-//     console.error(error);
-//     sendResponse(res, 500, "Failed", {
-//       message: error.message || "Internal server error",
-//     });
-//   }
-// });
 subCategoryController.post("/list", async (req, res) => {
   try {
     const {
@@ -126,7 +82,6 @@ subCategoryController.post("/list", async (req, res) => {
     });
   }
 });
-
 subCategoryController.put("/update", upload.single("image"), async (req, res) => {
   try {
     const id = req.body._id;
@@ -177,7 +132,6 @@ subCategoryController.put("/update", upload.single("image"), async (req, res) =>
     });
   }
 });
-
 subCategoryController.delete("/delete/:id", async (req, res) => {
   try {
     const { id } = req.params;
@@ -219,27 +173,49 @@ subCategoryController.delete("/delete/:id", async (req, res) => {
   }
 });
 
-subCategoryController.get("/details/:id",  async (req, res) => {
+subCategoryController.get("/details/:id", auth, async (req, res) => {
   try {
-    const { id } = req.params
-    const subCategoryDetails = await subCategory.findOne({_id:id});
-    const serviceList = await service.find({subCategoryId:id});
-    const repairList = await repair.find({subCategoryId:id});
-    const installationList = await installation.find({subCategoryId:id});
+    const { id } = req.params;
+    const subCategoryDetails = await subCategory.findOne({ _id: id });
+    const serviceList = await service.find({ subCategoryId: id });
+    const repairList = await repair.find({ subCategoryId: id });
+    const installationList = await installation.find({ subCategoryId: id });
+
+    // Wishlist IDs extract karna
+    const wishListIds = req.user.wishList.map((item) => item.modelId.toString());
+
+    // `isAdded` flag set karna
+    const updateListWithWishlist = (list, type) => {
+      return list.map((item) => ({
+        ...item._doc,
+        isFavourite: wishListIds.includes(item._id.toString()) && 
+                 req.user.wishList.some(w => w.modelId.toString() === item._id.toString() && w.modelType === type)
+      }));
+    };
+
+    const updatedServiceList = updateListWithWishlist(serviceList, "service");
+    const updatedRepairList = updateListWithWishlist(repairList, "repair");
+    const updatedInstallationList = updateListWithWishlist(installationList, "installation");
 
     sendResponse(res, 200, "Success", {
-      message: "Services of sub category retrived successfully!",
-      data:{subCategoryDetails, serviceList, repairList, installationList},
-      statusCode:200
+      message: "Services of sub category retrieved successfully!",
+      data: {
+        subCategoryDetails,
+        serviceList: updatedServiceList,
+        repairList: updatedRepairList,
+        installationList: updatedInstallationList
+      },
+      statusCode: 200
     });
   } catch (error) {
     console.error(error);
     sendResponse(res, 500, "Failed", {
       message: error.message || "Internal server error",
-      statusCode:500
+      statusCode: 500
     });
   }
 });
+
 subCategoryController.put("/update-banner", upload.single("banner"), async (req, res) => {
   try {
     const id = req.body._id;

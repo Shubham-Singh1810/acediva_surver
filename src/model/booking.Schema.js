@@ -55,6 +55,7 @@ const bookingSchema = mongoose.Schema({
   modeOfPayment: {
     type: String,
     required: true,
+    enum: ["dob", "online"], 
   },
   paymentId: {
     type: String,
