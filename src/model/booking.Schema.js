@@ -56,6 +56,18 @@ const bookingSchema = mongoose.Schema({
     type: String,
     required: true,
   },
+  paymentId: {
+    type: String,
+    required: true,
+  },
+  bookingId: {
+    type: String,
+    required: true,
+  },
+  signature: {
+    type: String,
+    required: true,
+  },
 });
 
 bookingSchema.plugin(timestamps);

@@ -3,7 +3,7 @@ const timestamps = require("mongoose-timestamp");
 const { type } = require("os");
 
 const userSchema = mongoose.Schema({
-  fullName: {
+  firstName: {
     type: String,
   },
   lastName: {
