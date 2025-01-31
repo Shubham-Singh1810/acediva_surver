@@ -29,7 +29,7 @@ serviceController.post("/list", async (req, res) => {
     const {
       searchKey = "",
       status,
-      pageNo = 0,
+      pageNo = 1,
       pageCount = 10,
       sortBy = { field: "createdAt", order: "desc" },
     } = req.body;
