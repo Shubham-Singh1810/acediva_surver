@@ -57,6 +57,12 @@ const bookingSchema = mongoose.Schema({
     required: true,
     enum: ["dob", "online"], 
   },
+  bookingStatus: {
+    type: String,
+    required: true,
+    default: "orderPlaced",
+    enum: ["orderPlaced", "venderAssigned", "bookingCompleted" ], 
+  },
   paymentId: {
     type: String,
     required: true,

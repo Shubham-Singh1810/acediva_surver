@@ -20,7 +20,7 @@ userController.post("/send-otp", async (req, res) => {
     if (!phoneNumber) {
       return sendResponse(res, 400, "Failed", {
         message: "Phone number is required.",
-        statusCode:400
+        statusCode: 400,
       });
     }
     // Generate OTP
@@ -54,12 +54,12 @@ userController.post("/send-otp", async (req, res) => {
       return sendResponse(res, 200, "Success", {
         message: "OTP send successfully",
         data: user,
-        statusCode:200
+        statusCode: 200,
       });
     } else {
       return sendResponse(res, 422, "Failed", {
         message: "Unable to send OTP",
-        statusCode:200
+        statusCode: 200,
       });
     }
   } catch (error) {
@@ -72,56 +72,56 @@ userController.post("/send-otp", async (req, res) => {
 });
 userController.post("/otp-verification", async (req, res) => {
   try {
-    const {phoneNumber, otp} = req.body
-    const user = await User.findOne({phoneNumber:phoneNumber, otp:otp});
-    if(user){
+    const { phoneNumber, otp } = req.body;
+    const user = await User.findOne({ phoneNumber: phoneNumber, otp: otp });
+    if (user) {
       return sendResponse(res, 200, "Success", {
         message: "User logged in successfully",
         data: user,
-        statusCode:200
+        statusCode: 200,
       });
-    }else{
+    } else {
       return sendResponse(res, 422, "Failed", {
         message: "Wrong OTP",
-        statusCode:422
+        statusCode: 422,
       });
     }
   } catch (error) {
     return sendResponse(res, 500, "Failed", {
       message: error.message || "Internal server error.",
-      statusCode:500
+      statusCode: 500,
     });
   }
 });
 userController.post("/create-admin", async (req, res) => {
   try {
-    const {email, password} = req.body
-    const user = await User.findOne({email:email, password:password, role:"admin"});
-    if(user){
+    const { email, password } = req.body;
+    const user = await User.findOne({ email: email, password: password, role: "admin" });
+    if (user) {
       return sendResponse(res, 422, "Failed", {
         message: "Admin already exists",
         data: user,
-        statusCode:422
+        statusCode: 422,
       });
     }
     let admin = await User.create(req.body);
     return sendResponse(res, 200, "Failed", {
       message: "Admin created successfully",
       data: admin,
-      statusCode:200
+      statusCode: 200,
     });
   } catch (error) {
     return sendResponse(res, 500, "Failed", {
       message: error.message || "Internal server error.",
-      statusCode:500
+      statusCode: 500,
     });
   }
 });
 userController.post("/admin-login", async (req, res) => {
   try {
-    const {email, password} = req.body
-    let user = await User.findOne({email:email, password:password, role:"admin"});
-    if(user){
+    const { email, password } = req.body;
+    let user = await User.findOne({ email: email, password: password, role: "admin" });
+    if (user) {
       // Generate JWT token for the new user
       const token = jwt.sign({ userId: user._id, phoneNumber: user.phoneNumber }, process.env.JWT_KEY);
       // Store the token in the user object or return it in the response
@@ -130,18 +130,18 @@ userController.post("/admin-login", async (req, res) => {
       return sendResponse(res, 200, "Success", {
         message: "Admin logged in successfully",
         data: user,
-        statusCode:200
+        statusCode: 200,
       });
-    }else{
+    } else {
       return sendResponse(res, 400, "Success", {
         message: "Invalid Credintials",
-        statusCode:400
+        statusCode: 400,
       });
     }
   } catch (error) {
     return sendResponse(res, 500, "Failed", {
       message: error.message || "Internal server error.",
-      statusCode:500
+      statusCode: 500,
     });
   }
 });
@@ -238,27 +238,31 @@ userController.get("/get-wish-list/:userId", async (req, res) => {
     };
 
     // Populate the wish list with model details based on modelType
-    const populatedWishList = await Promise.all(user.wishList.map(async (item) => {
-      const Model = modelMapping[item.modelType]; // Dynamically select the model
-      if (Model) {
-        // Find the model item and populate it with the details
-        const populatedItem = await Model.findById(item.modelId)
-        return {
-          id: item._id,  // Adding user-friendly field names
-          modelId: item.modelId,
-          modelType: item.modelType,
-          modelDetails: populatedItem ? {
-            id: populatedItem._id,
-            name: populatedItem.name,
-            description: populatedItem.description,
-            rate:populatedItem.rate,
-            distance:populatedItem.distance,
-            status:populatedItem.status
-          } : null
-        };
-      }
-      return item; // If no model found, return as is
-    }));
+    const populatedWishList = await Promise.all(
+      user.wishList.map(async (item) => {
+        const Model = modelMapping[item.modelType]; // Dynamically select the model
+        if (Model) {
+          // Find the model item and populate it with the details
+          const populatedItem = await Model.findById(item.modelId);
+          return {
+            id: item._id, // Adding user-friendly field names
+            modelId: item.modelId,
+            modelType: item.modelType,
+            modelDetails: populatedItem
+              ? {
+                  id: populatedItem._id,
+                  name: populatedItem.name,
+                  description: populatedItem.description,
+                  rate: populatedItem.rate,
+                  distance: populatedItem.distance,
+                  status: populatedItem.status,
+                }
+              : null,
+          };
+        }
+        return item; // If no model found, return as is
+      })
+    );
 
     return sendResponse(res, 200, "Success", {
       message: "Wish list retrieved successfully.",
@@ -288,15 +292,15 @@ userController.put("/update", upload.single("image"), async (req, res) => {
     let updatedData = { ...req.body };
     let obj;
     if (req.file) {
-          let image = await cloudinary.uploader.upload(req.file.path, function (err, result) {
-            if (err) {
-              return err;
-            } else {
-              return result;
-            }
-          });
-          obj = { ...req.body, image: image.url };
+      let image = await cloudinary.uploader.upload(req.file.path, function (err, result) {
+        if (err) {
+          return err;
+        } else {
+          return result;
         }
+      });
+      obj = { ...req.body, image: image.url };
+    }
 
     // Update the category in the database
     const updatedUserData = await User.findByIdAndUpdate(id, obj, {
@@ -306,7 +310,7 @@ userController.put("/update", upload.single("image"), async (req, res) => {
     sendResponse(res, 200, "Success", {
       message: "User updated successfully!",
       data: updatedUserData,
-      statusCode:200
+      statusCode: 200,
     });
   } catch (error) {
     console.error(error);
@@ -315,14 +319,14 @@ userController.put("/update", upload.single("image"), async (req, res) => {
     });
   }
 });
-userController.get("/details/:id",  async (req, res) => {
+userController.get("/details/:id", async (req, res) => {
   try {
-    const {id} = req.params;
-    const userData = await User.findOne({_id:id});
+    const { id } = req.params;
+    const userData = await User.findOne({ _id: id });
     sendResponse(res, 200, "Success", {
       message: "User details retrived successfully!",
       data: userData,
-      statusCode:200
+      statusCode: 200,
     });
   } catch (error) {
     console.error(error);
