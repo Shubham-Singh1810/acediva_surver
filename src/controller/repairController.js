@@ -49,9 +49,11 @@ repairController.post("/list", async (req, res) => {
     .limit(parseInt(pageCount))
     .skip(parseInt(pageNo-1) * parseInt(pageCount))
      
-
+    const totalCount = await subCategory.countDocuments({});
+    const activeCount = await subCategory.countDocuments({ status: true });
     sendResponse(res, 200, "Success", {
       message: "Repair list retrieved successfully!",
+      documentCount: { totalCount, activeCount, inactiveCount: totalCount - activeCount },
       data: serviceList,
     });
   } catch (error) {

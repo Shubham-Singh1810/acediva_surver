@@ -26,34 +26,29 @@ serviceController.post("/create", async (req, res) => {
 
 serviceController.post("/list", async (req, res) => {
   try {
-    const {
-      searchKey = "", 
-      status, 
-      pageNo=1, 
-      pageCount = 10,
-      sortByField, 
-      sortByOrder
-    } = req.body;
+    const { searchKey = "", status, pageNo = 1, pageCount = 10, sortByField, sortByOrder } = req.body;
 
     const query = {};
     if (status) query.status = status;
     if (searchKey) query.name = { $regex: searchKey, $options: "i" };
 
-     // Construct sorting object
-     const sortField = sortByField || "createdAt"; 
-     const sortOrder = sortByOrder === "asc" ? 1 : -1; 
-     const sortOption = { [sortField]: sortOrder };
+    // Construct sorting object
+    const sortField = sortByField || "createdAt";
+    const sortOrder = sortByOrder === "asc" ? 1 : -1;
+    const sortOption = { [sortField]: sortOrder };
 
     // Fetch the category list
     const serviceList = await service
-    .find(query)
-    .sort(sortOption)
-    .limit(parseInt(pageCount))
-    .skip(parseInt(pageNo-1) * parseInt(pageCount))
-     
+      .find(query)
+      .sort(sortOption)
+      .limit(parseInt(pageCount))
+      .skip(parseInt(pageNo - 1) * parseInt(pageCount));
 
+    const totalCount = await subCategory.countDocuments({});
+    const activeCount = await subCategory.countDocuments({ status: true });
     sendResponse(res, 200, "Success", {
       message: "Service list retrieved successfully!",
+      documentCount: { totalCount, activeCount, inactiveCount: totalCount - activeCount },
       data: serviceList,
     });
   } catch (error) {
@@ -167,7 +162,7 @@ serviceController.post("/details", async (req, res) => {
       let response = await service.findOne({ _id: id });
       sendResponse(res, 200, "Success", {
         message: "Service details fetched successfully",
-        data:response,
+        data: response,
         statusCode: 200,
       });
       return;
