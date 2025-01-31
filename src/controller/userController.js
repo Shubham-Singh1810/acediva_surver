@@ -10,6 +10,7 @@ const request = require("request");
 const axios = require("axios");
 require("dotenv").config();
 const jwt = require("jsonwebtoken");
+const cloudinary = require("../utils/cloudinary");
 const upload = require("../utils/multer");
 
 userController.post("/send-otp", async (req, res) => {
@@ -285,28 +286,20 @@ userController.put("/update", upload.single("image"), async (req, res) => {
     }
 
     let updatedData = { ...req.body };
-
-    // If a new image is uploaded
+    let obj;
     if (req.file) {
-      // Delete the old image from Cloudinary
-      if (userData.image) {
-        const publicId = User.image.split("/").pop().split(".")[0];
-        await cloudinary.uploader.destroy(publicId, (error, result) => {
-          if (error) {
-            console.error("Error deleting old image from Cloudinary:", error);
-          } else {
-            console.log("Old image deleted from Cloudinary:", result);
-          }
-        });
-      }
-
-      // Upload the new image to Cloudinary
-      const image = await cloudinary.uploader.upload(req.file.path);
-      updatedData.image = image.url;
-    }
+          let image = await cloudinary.uploader.upload(req.file.path, function (err, result) {
+            if (err) {
+              return err;
+            } else {
+              return result;
+            }
+          });
+          obj = { ...req.body, image: image.url };
+        }
 
     // Update the category in the database
-    const updatedUserData = await User.findByIdAndUpdate(id, updatedData, {
+    const updatedUserData = await User.findByIdAndUpdate(id, obj, {
       new: true, // Return the updated document
     });
 
