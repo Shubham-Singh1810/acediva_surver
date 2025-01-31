@@ -84,6 +84,7 @@ installationController.delete("/delete/:id", async (req, res) => {
 
     sendResponse(res, 200, "Success", {
       message: "Installation deleted successfully!",
+      statusCode:200
     });
   } catch (error) {
     console.error(error);
