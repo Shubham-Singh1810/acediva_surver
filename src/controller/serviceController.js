@@ -44,15 +44,15 @@ serviceController.post("/list", async (req, res) => {
     const sortOption = { [sortField]: sortOrder };
 
     // Fetch the category list
-    const subCategoryList = await subCategory
+    const serviceList = await service
       .find(query)
       .sort(sortOption)
       .limit(parseInt(pageCount))
       .skip(parseInt(pageNo) * parseInt(pageCount));
 
     sendResponse(res, 200, "Success", {
-      message: "Sub Category list retrieved successfully!",
-      data: subCategoryList,
+      message: "Service list retrieved successfully!",
+      data: serviceList,
     });
   } catch (error) {
     console.error(error);
