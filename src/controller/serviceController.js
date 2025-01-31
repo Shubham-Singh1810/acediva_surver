@@ -1,11 +1,11 @@
 const express = require("express");
 const { sendResponse } = require("../utils/common");
 require("dotenv").config();
-const service = require("../model/service.Schema");
 const serviceController = express.Router();
 require("dotenv").config();
 const cloudinary = require("../utils/cloudinary");
 const upload = require("../utils/multer");
+const service = require("../model/service.Schema");
 const repair = require("../model/repair.Schema");
 const installation = require("../model/installation.Schema");
 
@@ -27,28 +27,30 @@ serviceController.post("/create", async (req, res) => {
 serviceController.post("/list", async (req, res) => {
   try {
     const {
-      searchKey = "",
-      status,
-      pageNo = 1,
+      searchKey = "", 
+      status, 
+      pageNo=1, 
       pageCount = 10,
-      sortBy = { field: "createdAt", order: "desc" },
+      sortByField, 
+      sortByOrder
     } = req.body;
 
     const query = {};
     if (status) query.status = status;
     if (searchKey) query.name = { $regex: searchKey, $options: "i" };
 
-    // Construct sorting object
-    const sortField = sortBy.field || "createdAt";
-    const sortOrder = sortBy.order === "asc" ? 1 : -1;
-    const sortOption = { [sortField]: sortOrder };
+     // Construct sorting object
+     const sortField = sortByField || "createdAt"; 
+     const sortOrder = sortByOrder === "asc" ? 1 : -1; 
+     const sortOption = { [sortField]: sortOrder };
 
     // Fetch the category list
     const serviceList = await service
-      .find(query)
-      .sort(sortOption)
-      .limit(parseInt(pageCount))
-      .skip(parseInt(pageNo) * parseInt(pageCount));
+    .find(query)
+    .sort(sortOption)
+    .limit(parseInt(pageCount))
+    .skip(parseInt(pageNo-1) * parseInt(pageCount))
+     
 
     sendResponse(res, 200, "Success", {
       message: "Service list retrieved successfully!",
