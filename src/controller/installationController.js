@@ -75,10 +75,6 @@ installationController.delete("/delete/:id", async (req, res) => {
         message: "Installation not found",
       });
     }
-
-    
-    
-
     // Delete the category from the database
     await installation.findByIdAndDelete(id);
 

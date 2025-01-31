@@ -65,15 +65,12 @@ const bookingSchema = mongoose.Schema({
   },
   paymentId: {
     type: String,
-    required: true,
   },
   bookingId: {
     type: String,
-    required: true,
   },
   signature: {
     type: String,
-    required: true,
   },
 });
 
