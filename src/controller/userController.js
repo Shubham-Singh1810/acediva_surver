@@ -281,7 +281,7 @@ userController.put("/update", upload.single("image"), async (req, res) => {
   try {
     const id = req.body._id;
 
-    // Find the category by ID
+    // Find the user by ID
     const userData = await User.findById(id);
     if (!userData) {
       return sendResponse(res, 404, "Failed", {
@@ -290,7 +290,9 @@ userController.put("/update", upload.single("image"), async (req, res) => {
     }
 
     let updatedData = { ...req.body };
-    let obj;
+
+    // Handle image upload if a new image is provided
+
     if (req.file) {
       let image = await cloudinary.uploader.upload(req.file.path, function (err, result) {
         if (err) {
@@ -299,11 +301,10 @@ userController.put("/update", upload.single("image"), async (req, res) => {
           return result;
         }
       });
-      obj = { ...req.body, image: image.url };
+      updatedData = { ...req.body, image: image.url };
     }
-
-    // Update the category in the database
-    const updatedUserData = await User.findByIdAndUpdate(id, obj, {
+    // Update the user in the database
+    const updatedUserData = await User.findByIdAndUpdate(id, updatedData, {
       new: true, // Return the updated document
     });
 
@@ -319,6 +320,7 @@ userController.put("/update", upload.single("image"), async (req, res) => {
     });
   }
 });
+
 userController.get("/details/:id", async (req, res) => {
   try {
     const { id } = req.params;
