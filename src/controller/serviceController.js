@@ -44,8 +44,8 @@ serviceController.post("/list", async (req, res) => {
       .limit(parseInt(pageCount))
       .skip(parseInt(pageNo - 1) * parseInt(pageCount));
 
-    const totalCount = await subCategory.countDocuments({});
-    const activeCount = await subCategory.countDocuments({ status: true });
+    const totalCount = await service.countDocuments({});
+    const activeCount = await service.countDocuments({ status: true });
     sendResponse(res, 200, "Success", {
       message: "Service list retrieved successfully!",
       documentCount: { totalCount, activeCount, inactiveCount: totalCount - activeCount },
