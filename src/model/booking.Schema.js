@@ -50,7 +50,6 @@ const bookingSchema = mongoose.Schema({
   },
   tipAmount: {
     type: Number,
-    required: true,
   },
   modeOfPayment: {
     type: String,
@@ -61,7 +60,7 @@ const bookingSchema = mongoose.Schema({
     type: String,
     required: true,
     default: "orderPlaced",
-    enum: ["orderPlaced", "venderAssigned", "bookingCompleted"], 
+    enum: ["orderPlaced", "venderAssigned", "bookingCompleted", "cancelled"], 
   },
   paymentId: {
     type: String,
