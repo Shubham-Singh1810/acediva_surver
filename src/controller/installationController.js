@@ -25,32 +25,34 @@ installationController.post("/create",  async (req, res) => {
 installationController.post("/list", async (req, res) => {
   try {
     const {
-      searchKey = "",
-      status,
-      pageNo = 0,
+      searchKey = "", 
+      status, 
+      pageNo=1, 
       pageCount = 10,
-      sortBy = { field: "createdAt", order: "desc" },
+      sortByField, 
+      sortByOrder
     } = req.body;
 
     const query = {};
     if (status) query.status = status;
     if (searchKey) query.name = { $regex: searchKey, $options: "i" };
 
-    // Construct sorting object
-    const sortField = sortBy.field || "createdAt";
-    const sortOrder = sortBy.order === "asc" ? 1 : -1;
-    const sortOption = { [sortField]: sortOrder };
+     // Construct sorting object
+     const sortField = sortByField || "createdAt"; 
+     const sortOrder = sortByOrder === "asc" ? 1 : -1; 
+     const sortOption = { [sortField]: sortOrder };
 
     // Fetch the category list
-    const subCategoryList = await subCategory
-      .find(query)
-      .sort(sortOption)
-      .limit(parseInt(pageCount))
-      .skip(parseInt(pageNo) * parseInt(pageCount));
+    const serviceList = await installation
+    .find(query)
+    .sort(sortOption)
+    .limit(parseInt(pageCount))
+    .skip(parseInt(pageNo-1) * parseInt(pageCount))
+     
 
     sendResponse(res, 200, "Success", {
-      message: "Sub Category list retrieved successfully!",
-      data: subCategoryList,
+      message: "Installation list retrieved successfully!",
+      data: serviceList,
     });
   } catch (error) {
     console.error(error);
