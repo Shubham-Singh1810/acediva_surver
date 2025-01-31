@@ -64,6 +64,34 @@ installationController.post("/list", async (req, res) => {
   }
 });
 
+installationController.delete("/delete/:id", async (req, res) => {
+  try {
+    const { id } = req.params;
+    console.log(id);
+    // Find the category by ID
+    const installationItem = await installation.findById(id);
+    if (!installationItem) {
+      return sendResponse(res, 404, "Failed", {
+        message: "Installation not found",
+      });
+    }
+
+    
+    
+
+    // Delete the category from the database
+    await installation.findByIdAndDelete(id);
+
+    sendResponse(res, 200, "Success", {
+      message: "Installation deleted successfully!",
+    });
+  } catch (error) {
+    console.error(error);
+    sendResponse(res, 500, "Failed", {
+      message: error.message || "Internal server error",
+    });
+  }
+});
 installationController.put("/update", upload.single("image"), async (req, res) => {
   try {
     const id = req.body.id;
@@ -114,44 +142,6 @@ installationController.put("/update", upload.single("image"), async (req, res) =
   }
 });
 
-installationController.delete("/delete/:id", async (req, res) => {
-  try {
-    const { id } = req.params;
-    console.log(id);
-    // Find the category by ID
-    const subCategoryItem = await subCategory.findById(id);
-    if (!subCategoryItem) {
-      return sendResponse(res, 404, "Failed", {
-        message: "Sub Category not found",
-      });
-    }
 
-    // Extract the public ID from the Cloudinary image URL
-    const imageUrl = subCategory.image;
-    if (imageUrl) {
-      const publicId = imageUrl.split("/").pop().split(".")[0]; // Extract public ID
-      // Delete the image from Cloudinary
-      await cloudinary.uploader.destroy(publicId, (error, result) => {
-        if (error) {
-          console.error("Error deleting image from Cloudinary:", error);
-        } else {
-          console.log("Cloudinary image deletion result:", result);
-        }
-      });
-    }
-
-    // Delete the category from the database
-    await subCategory.findByIdAndDelete(id);
-
-    sendResponse(res, 200, "Success", {
-      message: "Sub Category and associated image deleted successfully!",
-    });
-  } catch (error) {
-    console.error(error);
-    sendResponse(res, 500, "Failed", {
-      message: error.message || "Internal server error",
-    });
-  }
-});
 
 module.exports = installationController;
