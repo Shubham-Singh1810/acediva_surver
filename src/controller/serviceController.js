@@ -9,9 +9,20 @@ const service = require("../model/service.Schema");
 const repair = require("../model/repair.Schema");
 const installation = require("../model/installation.Schema");
 
-serviceController.post("/create", async (req, res) => {
+serviceController.post("/create",upload.single("image"), async (req, res) => {
   try {
-    const serviceCreated = await service.create(req.body);
+    let obj;
+        if (req.file) {
+          let image = await cloudinary.uploader.upload(req.file.path, function (err, result) {
+            if (err) {
+              return err;
+            } else {
+              return result;
+            }
+          });
+          obj = { ...req.body, banner: image.url };
+        }
+    const serviceCreated = await service.create(obj);
     sendResponse(res, 200, "Success", {
       message: "Service created successfully!",
       data: serviceCreated,

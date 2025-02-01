@@ -42,15 +42,15 @@ const serviceSchema = mongoose.Schema({
     {
       title:{
         type:String,
-        required: true,
+        // required: true,
       },
       subTitle:{
         type:String,
-        required:true,
+        // required:true,
       },
       image:{
         type:String,
-        required:true,
+        // required:true,
       }
     }
   ]
