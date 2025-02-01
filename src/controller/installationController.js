@@ -7,17 +7,30 @@ require("dotenv").config();
 const cloudinary = require("../utils/cloudinary");
 const upload = require("../utils/multer");
 
-installationController.post("/create",  async (req, res) => {
+installationController.post("/create", upload.single("banner"), async (req, res) => {
   try {
-    const repairCreated = await installation.create(req.body);
+    let obj;
+    if (req.file) {
+      let banner = await cloudinary.uploader.upload(req.file.path, function (err, result) {
+        if (err) {
+          return err;
+        } else {
+          return result;
+        }
+      });
+      obj = { ...req.body, banner: banner.url };
+    }
+    const installationCreated = await installation.create(obj);
     sendResponse(res, 200, "Success", {
-      message: "Installation record created successfully!",
-      data: repairCreated,
+      message: "Installlation created successfully!",
+      data: installationCreated,
+      statusCode:200
     });
   } catch (error) {
     console.error(error);
     sendResponse(res, 500, "Failed", {
       message: error.message || "Internal server error",
+      statusCode:500
     });
   }
 });

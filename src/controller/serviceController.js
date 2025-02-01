@@ -3,35 +3,36 @@ const { sendResponse } = require("../utils/common");
 require("dotenv").config();
 const serviceController = express.Router();
 require("dotenv").config();
-const cloudinary = require("../utils/cloudinary");
-const upload = require("../utils/multer");
-const service = require("../model/service.Schema");
 const repair = require("../model/repair.Schema");
 const installation = require("../model/installation.Schema");
+const service = require("../model/service.Schema");
+const cloudinary = require("../utils/cloudinary");
+const upload = require("../utils/multer");
 
-serviceController.post("/create", upload.single("image"), async (req, res) => {
+serviceController.post("/create", upload.single("banner"), async (req, res) => {
   try {
-    console.log(req.body, "hrfbe")
     let obj;
-        if (req.file) {
-          let image = await cloudinary.uploader.upload(req.file.path, function (err, result) {
-            if (err) {
-              return err;
-            } else {
-              return result;
-            }
-          });
-          obj = { ...req.body, banner: image.url };
+    if (req.file) {
+      let banner = await cloudinary.uploader.upload(req.file.path, function (err, result) {
+        if (err) {
+          return err;
+        } else {
+          return result;
         }
+      });
+      obj = { ...req.body, banner: banner.url };
+    }
     const serviceCreated = await service.create(obj);
     sendResponse(res, 200, "Success", {
-      message: "Service created successfully!",
+      message: "Services created successfully!",
       data: serviceCreated,
+      statusCode:200
     });
   } catch (error) {
     console.error(error);
     sendResponse(res, 500, "Failed", {
       message: error.message || "Internal server error",
+      statusCode:500
     });
   }
 });
