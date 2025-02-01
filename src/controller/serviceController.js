@@ -9,8 +9,9 @@ const service = require("../model/service.Schema");
 const repair = require("../model/repair.Schema");
 const installation = require("../model/installation.Schema");
 
-serviceController.post("/create",upload.single("image"), async (req, res) => {
+serviceController.post("/create", upload.single("image"), async (req, res) => {
   try {
+    console.log(req.body, "hrfbe")
     let obj;
         if (req.file) {
           let image = await cloudinary.uploader.upload(req.file.path, function (err, result) {
