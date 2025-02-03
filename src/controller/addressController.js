@@ -21,7 +21,6 @@ addressController.post("/create", async (req, res) => {
     });
   }
 });
-
 addressController.get("/list/user/:id", async (req, res) => {
   try {
     const { id } = req.params;
@@ -39,12 +38,9 @@ addressController.get("/list/user/:id", async (req, res) => {
     });
   }
 });
-
 addressController.put("/update", async (req, res) => {
   try {
     const id = req.body._id;
-
-    // Find the category by ID
     const address = await Address.findById(id);
     if (!address) {
       return sendResponse(res, 404, "Failed", {
@@ -53,7 +49,7 @@ addressController.put("/update", async (req, res) => {
       });
     }
     const updatedAddress = await Address.findByIdAndUpdate(id, req.body, {
-      new: true, // Return the updated document
+      new: true, 
     });
 
     sendResponse(res, 200, "Success", {
@@ -72,8 +68,6 @@ addressController.put("/update", async (req, res) => {
 addressController.delete("/delete/:id", async (req, res) => {
   try {
     const { id } = req.params;
-
-    // Find the category by ID
     const address = await Address.findById(id);
     if (!address) {
       return sendResponse(res, 404, "Failed", {
@@ -81,7 +75,6 @@ addressController.delete("/delete/:id", async (req, res) => {
       });
     }
     await Address.findByIdAndDelete(id);
-
     sendResponse(res, 200, "Success", {
       message: "Address  deleted successfully!",
       statusCode: 200,

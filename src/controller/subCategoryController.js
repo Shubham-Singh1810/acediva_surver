@@ -172,7 +172,6 @@ subCategoryController.delete("/delete/:id", async (req, res) => {
     });
   }
 });
-
 subCategoryController.get("/details/:id", auth, async (req, res) => {
   try {
     const { id } = req.params;
@@ -215,7 +214,6 @@ subCategoryController.get("/details/:id", auth, async (req, res) => {
     });
   }
 });
-
 subCategoryController.put("/update-banner", upload.single("banner"), async (req, res) => {
   try {
     const id = req.body._id;

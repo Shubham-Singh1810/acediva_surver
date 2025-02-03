@@ -70,8 +70,6 @@ serviceController.post("/list", async (req, res) => {
     });
   }
 });
-
-
 serviceController.delete("/delete/:id", async (req, res) => {
   try {
     const { id } = req.params;
@@ -145,8 +143,6 @@ serviceController.put("/update", upload.single("image"), async (req, res) => {
     });
   }
 });
-
-
 serviceController.post("/details", async (req, res) => {
   try {
     const { id, serviceType } = req.body;

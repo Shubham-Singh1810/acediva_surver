@@ -34,7 +34,6 @@ repairController.post("/create", upload.single("banner"), async (req, res) => {
     });
   }
 });
-
 repairController.post("/list", async (req, res) => {
   try {
     const {
@@ -76,7 +75,6 @@ repairController.post("/list", async (req, res) => {
     });
   }
 });
-
 repairController.delete("/delete/:id", async (req, res) => {
   try {
     const { id } = req.params;
@@ -105,7 +103,6 @@ repairController.delete("/delete/:id", async (req, res) => {
     });
   }
 });
-
 repairController.put("/update", upload.single("image"), async (req, res) => {
   try {
     const id = req.body.id;
@@ -155,7 +152,5 @@ repairController.put("/update", upload.single("image"), async (req, res) => {
     });
   }
 });
-
-
 
 module.exports = repairController;

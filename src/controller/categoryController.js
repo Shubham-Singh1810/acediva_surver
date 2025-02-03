@@ -6,7 +6,7 @@ const categoryController = express.Router();
 require("dotenv").config();
 const cloudinary = require("../utils/cloudinary");
 const upload = require("../utils/multer");
-const subCategory = require("../model/subCategory.Schema");
+const SubCategory = require("../model/subCategory.Schema");
 
 categoryController.post("/create", upload.single("image"), async (req, res) => {
   try {
@@ -35,7 +35,6 @@ categoryController.post("/create", upload.single("image"), async (req, res) => {
     });
   }
 });
-
 categoryController.post("/list", async (req, res) => {
   try {
     const {
@@ -46,18 +45,12 @@ categoryController.post("/list", async (req, res) => {
       sortByField, 
       sortByOrder
     } = req.body;
-
-    
     const query = {};
     if (status) query.status = status; 
     if (searchKey) query.name = { $regex: searchKey, $options: "i" }; 
-
-    // Construct sorting object
     const sortField = sortByField || "createdAt"; 
     const sortOrder = sortByOrder === "asc" ? 1 : -1; 
     const sortOption = { [sortField]: sortOrder };
-
-    // Fetch the category list
     const categoryList = await Category.find(query)
       .sort(sortOption)
       .limit(parseInt(pageCount))
@@ -78,12 +71,9 @@ categoryController.post("/list", async (req, res) => {
     });
   }
 });
-
 categoryController.put("/update", upload.single("image"), async (req, res) => {
     try {
       const  id  = req.body._id;
-  
-      // Find the category by ID
       const category = await Category.findById(id);
       if (!category) {
         return sendResponse(res, 404, "Failed", {
@@ -91,10 +81,7 @@ categoryController.put("/update", upload.single("image"), async (req, res) => {
           statusCode:403
         });
       }
-  
       let updatedData = { ...req.body };
-  
-      // If a new image is uploaded
       if (req.file) {
         // Delete the old image from Cloudinary
         if (category.image) {
@@ -107,44 +94,33 @@ categoryController.put("/update", upload.single("image"), async (req, res) => {
             }
           });
         }
-  
-        // Upload the new image to Cloudinary
         const image = await cloudinary.uploader.upload(req.file.path);
         updatedData.image = image.url;
       }
-  
-      // Update the category in the database
       const updatedCategory = await Category.findByIdAndUpdate(id, updatedData, {
         new: true, // Return the updated document
       });
-  
       sendResponse(res, 200, "Success", {
         message: "Category updated successfully!",
         data: updatedCategory,
         statusCode:200
       });
     } catch (error) {
-      console.error(error);
       sendResponse(res, 500, "Failed", {
         message: error.message || "Internal server error",
         statusCode:500
       });
     }
 });
-
 categoryController.delete("/delete/:id", async (req, res) => {
     try {
       const { id } = req.params;
-  
-      // Find the category by ID
       const category = await Category.findById(id);
       if (!category) {
         return sendResponse(res, 404, "Failed", {
           message: "Category not found",
         });
       }
-  
-      // Extract the public ID from the Cloudinary image URL
       const imageUrl = category.image;
       if (imageUrl) {
         const publicId = imageUrl.split("/").pop().split(".")[0]; // Extract public ID
@@ -157,10 +133,7 @@ categoryController.delete("/delete/:id", async (req, res) => {
           }
         });
       }
-  
-      // Delete the category from the database
       await Category.findByIdAndDelete(id);
-  
       sendResponse(res, 200, "Success", {
         message: "Category and associated image deleted successfully!",
       });
@@ -171,12 +144,11 @@ categoryController.delete("/delete/:id", async (req, res) => {
       });
     }
 });
-
 categoryController.get("/details/:id",  async (req, res) => {
   try {
     const { id } = req.params
     const CategoryDetails = await Category.findOne({_id:id});
-    const SubCategoryList = await subCategory.find({categoryId:id});
+    const SubCategoryList = await SubCategory.find({categoryId:id});
     sendResponse(res, 200, "Success", {
       message: "Category with sub category retrived successfully!",
       data:{CategoryDetails, SubCategoryList},
