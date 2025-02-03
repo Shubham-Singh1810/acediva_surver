@@ -36,7 +36,6 @@ serviceController.post("/create", upload.single("banner"), async (req, res) => {
     });
   }
 });
-
 serviceController.post("/list", async (req, res) => {
   try {
     const { searchKey = "", status, pageNo = 1, pageCount = 10, sortByField, sortByOrder } = req.body;
