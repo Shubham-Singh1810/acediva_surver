@@ -213,6 +213,7 @@ serviceController.post("/search-list",auth, async (req, res) => {
     sendResponse(res, 200, "Success", {
       message: "Service list retrieved successfully!",
       data: [...updatedServiceList, ...updatedRepairList, ...updatedInstallationList],
+      statusCode:200
     });
   } catch (error) {
     console.error(error);
