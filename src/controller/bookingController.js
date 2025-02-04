@@ -81,6 +81,7 @@ bookingController.get("/cancel/:id", async (req, res) => {
       const updatedBooking = await Booking.findByIdAndUpdate(
         id,
         { bookingStatus: "cancel" },
+        { isRefunded: false },
         {
           new: true, // Return the updated document
         }

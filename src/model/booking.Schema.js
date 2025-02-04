@@ -71,6 +71,9 @@ const bookingSchema = mongoose.Schema({
   signature: {
     type: String,
   },
+  isRefunded:{
+    type: Boolean,
+  }
 });
 
 bookingSchema.plugin(timestamps);
