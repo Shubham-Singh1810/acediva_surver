@@ -8,6 +8,7 @@ const installation = require("../model/installation.Schema");
 const service = require("../model/service.Schema");
 const cloudinary = require("../utils/cloudinary");
 const upload = require("../utils/multer");
+const auth = require("../utils/auth");
 
 serviceController.post("/create", upload.single("banner"), async (req, res) => {
   try {
@@ -26,13 +27,13 @@ serviceController.post("/create", upload.single("banner"), async (req, res) => {
     sendResponse(res, 200, "Success", {
       message: "Services created successfully!",
       data: serviceCreated,
-      statusCode:200
+      statusCode: 200,
     });
   } catch (error) {
     console.error(error);
     sendResponse(res, 500, "Failed", {
       message: error.message || "Internal server error",
-      statusCode:500
+      statusCode: 500,
     });
   }
 });
@@ -85,7 +86,7 @@ serviceController.delete("/delete/:id", async (req, res) => {
 
     sendResponse(res, 200, "Success", {
       message: "Service deleted successfully",
-      statusCode:200
+      statusCode: 200,
     });
   } catch (error) {
     console.error(error);
@@ -187,32 +188,31 @@ serviceController.post("/details", async (req, res) => {
     });
   }
 });
-serviceController.post("/search-list", async (req, res) => {
+serviceController.post("/search-list",auth, async (req, res) => {
   try {
     const { searchKey = "", status, pageNo = 1, pageCount = 10, sortByField, sortByOrder } = req.body;
-
     const query = {};
-    if (status) query.status = status;
     if (searchKey) query.name = { $regex: searchKey, $options: "i" };
-
-    // Construct sorting object
-    const sortField = sortByField || "createdAt";
-    const sortOrder = sortByOrder === "asc" ? 1 : -1;
-    const sortOption = { [sortField]: sortOrder };
-
     // Fetch the category list
-    const serviceList = await service
-      .find(query)
-      .sort(sortOption)
-      .limit(parseInt(pageCount))
-      .skip(parseInt(pageNo - 1) * parseInt(pageCount));
-
-    const totalCount = await service.countDocuments({});
-    const activeCount = await service.countDocuments({ status: true });
+    const serviceList = await service.find(query);
+    const repairList = await repair.find(query);
+    const installationList = await installation.find(query);
+     // Wishlist IDs extract karna
+     const wishListIds = req.user.wishList.map((item) => item.modelId.toString());
+    const updateListWithWishlist = (list, type) => {
+      return list.map((item) => ({
+        ...item._doc,
+        serviceType:type,
+        isFavourite: wishListIds.includes(item._id.toString()) && 
+                 req.user.wishList.some(w => w.modelId.toString() === item._id.toString() && w.modelType === type)
+      }));
+    };
+    const updatedServiceList = updateListWithWishlist(serviceList, "service");
+    const updatedRepairList = updateListWithWishlist(repairList, "repair");
+    const updatedInstallationList = updateListWithWishlist(installationList, "installation");
     sendResponse(res, 200, "Success", {
       message: "Service list retrieved successfully!",
-      documentCount: { totalCount, activeCount, inactiveCount: totalCount - activeCount },
-      data: serviceList,
+      data: [...updatedServiceList, ...updatedRepairList, ...updatedInstallationList],
     });
   } catch (error) {
     console.error(error);
