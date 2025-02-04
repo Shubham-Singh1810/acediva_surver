@@ -25,6 +25,63 @@ bookingController.post("/create", async (req, res) => {
     });
   }
 });
+bookingController.post("/list", async (req, res) => {
+  try {
+    const bookingList = await Booking.find(req.body).populate({
+      path: "userId", 
+    });
+
+    // Use Promise.all to handle async operations inside map()
+    const updatedList = await Promise.all(
+      bookingList.map(async (v) => {
+        if(v?.serviceType=="service"){
+          const serviceData = await Service.findOne({ _id: v.serviceId });
+          return { ...v.toObject(), serviceData };
+        }
+        if(v?.serviceType=="repair"){
+          const serviceData = await Repair.findOne({ _id: v.serviceId });
+          return { ...v.toObject(), serviceData };
+        }
+        if(v?.serviceType=="installation"){
+          const serviceData = await Installation.findOne({ _id: v.serviceId });
+          return { ...v.toObject(), serviceData };
+        }
+        return v.toObject(); // Convert Mongoose document to plain object
+      })
+    );
+
+    // Aggregate booking counts in a single query
+    const bookingCounts = await Booking.aggregate([
+      {
+        $group: {
+          _id: "$bookingStatus",
+          count: { $sum: 1 },
+        },
+      },
+    ]);
+
+    // Convert array result to an object
+    const counts = { totalCount: await Booking.countDocuments({}) };
+    bookingCounts.forEach((item) => {
+      counts[`${item._id}Count`] = item.count;
+    });
+
+    sendResponse(res, 200, "Success", {
+      message: "Booking list retrieved successfully!",
+      data: updatedList,
+      documentCount: counts,
+      statusCode: 200,
+    });
+  } catch (error) {
+    console.error(error);
+    sendResponse(res, 500, "Failed", {
+      message: error.message || "Internal server error",
+      statusCode: 500,
+    });
+  }
+});
+
+
 bookingController.get("/my-list/:id", async (req, res) => {
   try {
     const { id } = req.params;

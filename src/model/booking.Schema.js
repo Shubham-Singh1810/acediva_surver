@@ -60,7 +60,7 @@ const bookingSchema = mongoose.Schema({
     type: String,
     required: true,
     default: "orderPlaced",
-    enum: ["orderPlaced", "venderAssigned", "bookingCompleted", "cancelled"], 
+    enum: ["orderPlaced", "venderAssigned", "bookingCompleted", "cancel"], 
   },
   paymentId: {
     type: String,
