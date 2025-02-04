@@ -76,6 +76,21 @@ bookingController.get("/cancel/:id", async (req, res) => {
         statusCode: 200,
       });
     }
+    if (bookingData?.modeOfPayment == "online") {
+      // Update the category in the database
+      const updatedBooking = await Booking.findByIdAndUpdate(
+        id,
+        { bookingStatus: "cancel" },
+        {
+          new: true, // Return the updated document
+        }
+      );
+      sendResponse(res, 200, "Success", {
+        message: "Booking cancel successfully, you will get your refund within 24 hours!",
+        data: updatedBooking,
+        statusCode: 200,
+      });
+    }
   } catch (error) {
     console.error(error);
     sendResponse(res, 500, "Failed", {
