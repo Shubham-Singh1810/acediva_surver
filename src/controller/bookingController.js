@@ -57,5 +57,31 @@ bookingController.get("/my-list/:id", async (req, res) => {
     });
   }
 });
-
+bookingController.get("/cancel/:id", async (req, res) => {
+  try {
+    const { id } = req.params;
+    const bookingData = await Booking.findOne({ _id: id });
+    if (bookingData?.modeOfPayment == "cod") {
+      // Update the category in the database
+      const updatedBooking = await Booking.findByIdAndUpdate(
+        id,
+        { bookingStatus: "cancel" },
+        {
+          new: true, // Return the updated document
+        }
+      );
+      sendResponse(res, 200, "Success", {
+        message: "Booking cancel successfully!",
+        data: updatedBooking,
+        statusCode: 200,
+      });
+    }
+  } catch (error) {
+    console.error(error);
+    sendResponse(res, 500, "Failed", {
+      message: error.message || "Internal server error",
+      statusCode: 500,
+    });
+  }
+});
 module.exports = bookingController;

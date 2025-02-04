@@ -78,8 +78,6 @@ repairController.post("/list", async (req, res) => {
 repairController.delete("/delete/:id", async (req, res) => {
   try {
     const { id } = req.params;
-    console.log(id);
-    // Find the category by ID
     const repairItem = await repair.findById(id);
     if (!repairItem) {
       return sendResponse(res, 404, "Failed", {
@@ -106,8 +104,6 @@ repairController.delete("/delete/:id", async (req, res) => {
 repairController.put("/update", upload.single("image"), async (req, res) => {
   try {
     const id = req.body.id;
-
-    // Find the category by ID
     const subCategory = await subCategory.findById(id);
     if (!subCategory) {
       return sendResponse(res, 404, "Failed", {
