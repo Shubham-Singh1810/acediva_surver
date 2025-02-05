@@ -148,5 +148,44 @@ repairController.put("/update", upload.single("image"), async (req, res) => {
     });
   }
 });
+repairController.put("/create-how-it-works", upload.single("image"), async (req, res) => {
+  try {
+    const { id, title, subTitle } = req.body;
+
+    // Find the service by ID
+    const repairData = await repair.findById(id);
+    if (!repairData) {
+      return sendResponse(res, 404, "Failed", {
+        message: "Repair not found",
+      });
+    }
+
+    // Create howItWorks object
+    const howItWorks = { title, subTitle };
+
+    // Upload image to Cloudinary if file is provided
+    if (req.file) {
+      const image = await cloudinary.uploader.upload(req.file.path);
+      howItWorks.image = image.url;
+    }
+
+    // Append howItWorks object to the array
+    const updatedRepair = await repair.findByIdAndUpdate(
+      id,
+      { $push: { howItWorks: howItWorks } }, // Corrected push operation
+      { new: true }
+    );
+
+    sendResponse(res, 200, "Success", {
+      message: "How It Works updated successfully!",
+      data: updatedRepair,
+    });
+  } catch (error) {
+    console.error(error);
+    sendResponse(res, 500, "Failed", {
+      message: error.message || "Internal server error",
+    });
+  }
+});
 
 module.exports = repairController;

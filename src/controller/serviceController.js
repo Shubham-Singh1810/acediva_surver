@@ -144,6 +144,45 @@ serviceController.put("/update", upload.single("image"), async (req, res) => {
     });
   }
 });
+serviceController.put("/create-how-it-works", upload.single("image"), async (req, res) => {
+  try {
+    const { id, title, subTitle } = req.body;
+
+    // Find the service by ID
+    const serviceData = await service.findById(id);
+    if (!serviceData) {
+      return sendResponse(res, 404, "Failed", {
+        message: "Service not found",
+      });
+    }
+
+    // Create howItWorks object
+    const howItWorks = { title, subTitle };
+
+    // Upload image to Cloudinary if file is provided
+    if (req.file) {
+      const image = await cloudinary.uploader.upload(req.file.path);
+      howItWorks.image = image.url;
+    }
+
+    // Append howItWorks object to the array
+    const updatedService = await service.findByIdAndUpdate(
+      id,
+      { $push: { howItWorks: howItWorks } }, // Corrected push operation
+      { new: true }
+    );
+
+    sendResponse(res, 200, "Success", {
+      message: "How It Works updated successfully!",
+      data: updatedService,
+    });
+  } catch (error) {
+    console.error(error);
+    sendResponse(res, 500, "Failed", {
+      message: error.message || "Internal server error",
+    });
+  }
+});
 serviceController.post("/details", async (req, res) => {
   try {
     const { id, serviceType } = req.body;

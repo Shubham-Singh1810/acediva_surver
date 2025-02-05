@@ -128,5 +128,43 @@ installationController.put("/update", upload.single("image"), async (req, res) =
     });
   }
 });
+installationController.put("/create-how-it-works", upload.single("image"), async (req, res) => {
+  try {
+    const { id, title, subTitle } = req.body;
 
+    // Find the installation by ID
+    const installationData = await Installation.findById(id);
+    if (!installationData) {
+      return sendResponse(res, 404, "Failed", {
+        message: "Installation not found",
+      });
+    }
+
+    // Create howItWorks object
+    const howItWorks = { title, subTitle };
+
+    // Upload image to Cloudinary if file is provided
+    if (req.file) {
+      const image = await cloudinary.uploader.upload(req.file.path);
+      howItWorks.image = image.url;
+    }
+
+    // Append howItWorks object to the array
+    const updatedInstallation = await Installation.findByIdAndUpdate(
+      id,
+      { $push: { howItWorks: howItWorks } }, // Corrected push operation
+      { new: true }
+    );
+
+    sendResponse(res, 200, "Success", {
+      message: "How It Works updated successfully!",
+      data: updatedInstallation,
+    });
+  } catch (error) {
+    console.error(error);
+    sendResponse(res, 500, "Failed", {
+      message: error.message || "Internal server error",
+    });
+  }
+});
 module.exports = installationController;
