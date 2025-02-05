@@ -262,7 +262,7 @@ serviceController.post("/search-list",auth, async (req, res) => {
     });
   }
 });
-serviceController.delete("/delete-how-it-works", async (req, res) => {
+serviceController.put("/delete-how-it-works", async (req, res) => {
   try {
     const { id, title } = req.body;
 

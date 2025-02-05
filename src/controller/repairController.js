@@ -188,7 +188,7 @@ repairController.put("/create-how-it-works", upload.single("image"), async (req,
     });
   }
 });
-repairController.delete("/delete-how-it-works", async (req, res) => {
+repairController.put("/delete-how-it-works", async (req, res) => {
   try {
     const { id, title } = req.body;
 

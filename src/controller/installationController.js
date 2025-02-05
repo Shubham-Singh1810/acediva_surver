@@ -167,7 +167,7 @@ installationController.put("/create-how-it-works", upload.single("image"), async
     });
   }
 });
-installationController.delete("/delete-how-it-works", async (req, res) => {
+installationController.put("/delete-how-it-works", async (req, res) => {
   try {
     const { id, title } = req.body;
 
