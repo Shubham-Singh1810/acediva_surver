@@ -172,7 +172,7 @@ installationController.put("/delete-how-it-works", async (req, res) => {
     const { id, title } = req.body;
 
     // Find the installation by ID
-    const installationData = await Installation.findById(id);
+    const installationData = await Installation.findById({_id :id});
     if (!installationData) {
       return sendResponse(res, 404, "Failed", {
         message: "Installation not found",

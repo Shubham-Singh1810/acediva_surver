@@ -193,7 +193,7 @@ repairController.put("/delete-how-it-works", async (req, res) => {
     const { id, title } = req.body;
 
     // Find the installation by ID
-    const repairData = await repair.findById(id);
+    const repairData = await repair.findById({_id :id});
     if (!repairData) {
       return sendResponse(res, 404, "Failed", {
         message: "Repair not found",
