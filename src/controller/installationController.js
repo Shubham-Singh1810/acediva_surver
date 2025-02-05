@@ -155,7 +155,6 @@ installationController.put("/create-how-it-works", upload.single("image"), async
       { $push: { howItWorks: howItWorks } }, // Corrected push operation
       { new: true }
     );
-
     sendResponse(res, 200, "Success", {
       message: "How It Works updated successfully!",
       data: updatedInstallation,
@@ -168,4 +167,36 @@ installationController.put("/create-how-it-works", upload.single("image"), async
     });
   }
 });
+installationController.delete("/delete-how-it-works", async (req, res) => {
+  try {
+    const { id, title } = req.body;
+
+    // Find the installation by ID
+    const installationData = await Installation.findById(id);
+    if (!installationData) {
+      return sendResponse(res, 404, "Failed", {
+        message: "Installation not found",
+      });
+    }
+
+    // Remove object with matching title from howItWorks array
+    const updatedInstallation = await Installation.findByIdAndUpdate(
+      id,
+      { $pull: { howItWorks: { title: title } } }, // Removes the object with the matching title
+      { new: true }
+    );
+
+    sendResponse(res, 200, "Success", {
+      message: "How It Works entry deleted successfully!",
+      data: updatedInstallation,
+      statusCode: 200,
+    });
+  } catch (error) {
+    console.error(error);
+    sendResponse(res, 500, "Failed", {
+      message: error.message || "Internal server error",
+    });
+  }
+});
+
 module.exports = installationController;

@@ -188,5 +188,35 @@ repairController.put("/create-how-it-works", upload.single("image"), async (req,
     });
   }
 });
+repairController.delete("/delete-how-it-works", async (req, res) => {
+  try {
+    const { id, title } = req.body;
 
+    // Find the installation by ID
+    const repairData = await repair.findById(id);
+    if (!repairData) {
+      return sendResponse(res, 404, "Failed", {
+        message: "Repair not found",
+      });
+    }
+
+    // Remove object with matching title from howItWorks array
+    const updatedRepair = await repair.findByIdAndUpdate(
+      id,
+      { $pull: { howItWorks: { title: title } } }, // Removes the object with the matching title
+      { new: true }
+    );
+
+    sendResponse(res, 200, "Success", {
+      message: "How It Works entry deleted successfully!",
+      data: updatedRepair,
+      statusCode: 200,
+    });
+  } catch (error) {
+    console.error(error);
+    sendResponse(res, 500, "Failed", {
+      message: error.message || "Internal server error",
+    });
+  }
+});
 module.exports = repairController;

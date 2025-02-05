@@ -262,5 +262,35 @@ serviceController.post("/search-list",auth, async (req, res) => {
     });
   }
 });
+serviceController.delete("/delete-how-it-works", async (req, res) => {
+  try {
+    const { id, title } = req.body;
 
+    // Find the installation by ID
+    const serviceData = await service.findById(id);
+    if (!serviceData) {
+      return sendResponse(res, 404, "Failed", {
+        message: "Service not found",
+      });
+    }
+
+    // Remove object with matching title from howItWorks array
+    const updatedService = await service.findByIdAndUpdate(
+      id,
+      { $pull: { howItWorks: { title: title } } }, // Removes the object with the matching title
+      { new: true }
+    );
+
+    sendResponse(res, 200, "Success", {
+      message: "How It Works entry deleted successfully!",
+      data: updatedService,
+      statusCode: 200,
+    });
+  } catch (error) {
+    console.error(error);
+    sendResponse(res, 500, "Failed", {
+      message: error.message || "Internal server error",
+    });
+  }
+});
 module.exports = serviceController;
