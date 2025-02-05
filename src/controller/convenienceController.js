@@ -8,7 +8,7 @@ convenienceController.get("/details", async (req, res) => {
   try {
     sendResponse(res, 200, "Success", {
       message: "convenience fee retrieved successfully!",
-      data: {fee:"12%"},
+      data: {percentage:12},
       statusCode:200
     });
   } catch (error) {
