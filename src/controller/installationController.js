@@ -159,6 +159,7 @@ installationController.put("/create-how-it-works", upload.single("image"), async
     sendResponse(res, 200, "Success", {
       message: "How It Works updated successfully!",
       data: updatedInstallation,
+      statusCode:200
     });
   } catch (error) {
     console.error(error);

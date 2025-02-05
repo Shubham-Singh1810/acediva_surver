@@ -179,6 +179,7 @@ repairController.put("/create-how-it-works", upload.single("image"), async (req,
     sendResponse(res, 200, "Success", {
       message: "How It Works updated successfully!",
       data: updatedRepair,
+      statusCode:200
     });
   } catch (error) {
     console.error(error);
