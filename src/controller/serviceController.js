@@ -267,7 +267,7 @@ serviceController.put("/delete-how-it-works", async (req, res) => {
     const { id, title } = req.body;
 
     // Find the installation by ID
-    const serviceData = await service.findById({_id :id});
+    const serviceData = await service.findOne({_id :id});
     if (!serviceData) {
       return sendResponse(res, 404, "Failed", {
         message: "Service not found",
