@@ -53,7 +53,10 @@ const installationSchema = mongoose.Schema({
         // required:true,
       }
     }
-  ]
+  ],
+  launchType:{
+    type: String,
+  }
 });
 
 installationSchema.plugin(timestamps);

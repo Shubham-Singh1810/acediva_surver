@@ -53,7 +53,10 @@ const repairSchema = mongoose.Schema({
         // required:true,
       }
     }
-  ]
+  ],
+  launchType:{
+    type: String,
+  }
 });
 
 repairSchema.plugin(timestamps);

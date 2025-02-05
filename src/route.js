@@ -9,6 +9,7 @@ const installationController = require("./controller/installationController");
 const bookingController = require("./controller/bookingController");
 const bannerController = require("./controller/bannerController");
 const addressController = require("./controller/addressController");
+const convenienceController = require("./controller/convenienceController");
 
 
 
@@ -21,5 +22,6 @@ router.use("/installation", installationController);
 router.use("/booking", bookingController);
 router.use("/banner", bannerController);
 router.use("/address", addressController);
+router.use("/convenience", convenienceController);
 
 module.exports = router;

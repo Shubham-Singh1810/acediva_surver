@@ -53,7 +53,10 @@ const serviceSchema = mongoose.Schema({
         // required:true,
       }
     }
-  ]
+  ],
+  launchType:{
+    type: String,
+  }
 });
 
 serviceSchema.plugin(timestamps);

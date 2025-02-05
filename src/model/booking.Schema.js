@@ -73,7 +73,10 @@ const bookingSchema = mongoose.Schema({
   },
   isRefunded:{
     type: Boolean,
-  }
+  },
+  totalAmount:{
+    String: String,
+  },
 });
 
 bookingSchema.plugin(timestamps);
