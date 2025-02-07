@@ -72,21 +72,27 @@ supportController.get("/list-faq", async (req, res) => {
     });
   }
 });
-supportController.post("/delete-faq/:id", async (req, res) => {
-  try {
-    const contactCreated = await Contact.create(req.body);
-    sendResponse(res, 200, "Success", {
-      message: "We have recived your query, Someone from our team will reach back to you!",
-      data: contactCreated,
-      statusCode: 200,
-    });
-  } catch (error) {
-    console.error(error);
-    sendResponse(res, 500, "Failed", {
-      message: error.message || "Internal server error",
-      statusCode: 500,
-    });
-  }
+supportController.delete("/delete-faq/:id", async (req, res) => {
+ try {
+     const { id } = req.params;
+     const faq = await Faq.findById(id);
+     if (!faq) {
+       return sendResponse(res, 404, "Failed", {
+         message: "Faq not found",
+       });
+     }
+     await Faq.findByIdAndDelete(id);
+     sendResponse(res, 200, "Success", {
+       message: "Faq  deleted successfully!",
+       statusCode: 200,
+     });
+   } catch (error) {
+     console.error(error);
+     sendResponse(res, 500, "Failed", {
+       message: error.message || "Internal server error",
+       statusCode: 200,
+     });
+   }
 });
 
 supportController.get("/details", async (req, res) => {
