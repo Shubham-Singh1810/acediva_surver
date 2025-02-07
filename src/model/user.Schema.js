@@ -42,6 +42,12 @@ const userSchema = mongoose.Schema({
     type: String,
     default: "91",
   },
+  profileStatus:{
+    type: String,
+    default: "incompleted",
+    required: true,
+      enum: ["incompleted", "completed"],
+  },
   wishList: [
     {
       modelId: { type: mongoose.Schema.Types.ObjectId, required: true }, // ObjectId of the referenced model

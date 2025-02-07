@@ -2,16 +2,21 @@ const express = require("express");
 const { sendResponse, generateOTP } = require("../utils/common");
 require("dotenv").config();
 const User = require("../model/user.Schema");
+const Booking = require("../model/booking.Schema");
+const Address = require("../model/address.Schema");
+const SubCategory = require("../model/subCategory.Schema");
 const repair = require("../model/repair.Schema");
 const service = require("../model/service.Schema");
 const installation = require("../model/installation.Schema");
 const userController = express.Router();
+const Category = require("../model/category.Schema");
 const request = require("request");
 const axios = require("axios");
 require("dotenv").config();
 const jwt = require("jsonwebtoken");
 const cloudinary = require("../utils/cloudinary");
 const upload = require("../utils/multer");
+const moment = require("moment");
 
 userController.post("/send-otp", async (req, res) => {
   try {
@@ -280,7 +285,6 @@ userController.get("/get-wish-list/:userId", async (req, res) => {
 userController.put("/update", upload.single("image"), async (req, res) => {
   try {
     const id = req.body._id;
-
     // Find the user by ID
     const userData = await User.findById(id);
     if (!userData) {
@@ -288,11 +292,11 @@ userController.put("/update", upload.single("image"), async (req, res) => {
         message: "User not found",
       });
     }
-
     let updatedData = { ...req.body };
-
+    if (req.body.firstName && req.body.lastName && req.body.email) {
+      updatedData = { ...req.body, profileStatus: "completed" };
+    }
     // Handle image upload if a new image is provided
-
     if (req.file) {
       let image = await cloudinary.uploader.upload(req.file.path, function (err, result) {
         if (err) {
@@ -320,20 +324,189 @@ userController.put("/update", upload.single("image"), async (req, res) => {
     });
   }
 });
-
-userController.get("/details/:id", async (req, res) => {
+userController.post("/list", async (req, res) => {
   try {
-    const { id } = req.params;
-    const userData = await User.findOne({ _id: id });
+    const { searchKey = "", status, pageNo = 1, pageCount = 10, sortByField, sortByOrder } = req.body;
+    const query = {};
+    if (status) query.profileStatus = status;
+    if (searchKey) query.firstName = { $regex: searchKey, $options: "i" };
+    const sortField = sortByField || "createdAt";
+    const sortOrder = sortByOrder === "asc" ? 1 : -1;
+    const sortOption = { [sortField]: sortOrder };
+    const userList = await User.find(query)
+      .sort(sortOption)
+      .limit(parseInt(pageCount))
+      .skip(parseInt(pageNo - 1) * parseInt(pageCount));
+
+    const totalCount = await User.countDocuments({});
+    const activeCount = await User.countDocuments({ profileStatus: "completed" });
+
+    // Define the model mapping for dynamic population
+    const modelMapping = {
+      service,
+      repair,
+      installation,
+    };
+
+    const updatedUserList = await Promise.all(
+      userList.map(async (user) => {
+        const populatedWishList = await Promise.all(
+          user.wishList.map(async (item) => {
+            const Model = modelMapping[item.modelType]; // Dynamically select the model
+            if (Model) {
+              const populatedItem = await Model.findById(item.modelId);
+              return {
+                id: item._id,
+                modelId: item.modelId,
+                modelType: item.modelType,
+                modelDetails: populatedItem
+                  ? {
+                      id: populatedItem._id,
+                      name: populatedItem.name,
+                      description: populatedItem.description,
+                      rate: populatedItem.rate,
+                      distance: populatedItem.distance,
+                      status: populatedItem.status,
+                    }
+                  : null,
+              };
+            }
+            return item;
+          })
+        );
+        const bookingList = await Booking.find({ userId: user?._id });
+        const addressList = await Address.find({ userId: user?._id });
+        return { ...user.toObject(), wishList: populatedWishList, bookingList, addressList };
+      })
+    );
+
     sendResponse(res, 200, "Success", {
-      message: "User details retrived successfully!",
-      data: userData,
+      message: "User list retrieved successfully!",
+      data: updatedUserList,
+      documentCount: { totalCount, activeCount, inactiveCount: totalCount - activeCount },
       statusCode: 200,
     });
   } catch (error) {
     console.error(error);
     sendResponse(res, 500, "Failed", {
       message: error.message || "Internal server error",
+      statusCode: 500,
+    });
+  }
+});
+userController.delete("/delete/:id", async (req, res) => {
+  try {
+    const { id } = req.params;
+    const user = await User.findById(id);
+    if (!user) {
+      return sendResponse(res, 404, "Failed", {
+        message: "User not found",
+      });
+    }
+
+    await User.findByIdAndDelete(id);
+    sendResponse(res, 200, "Success", {
+      message: "User Deleted Successfully",
+      statusCode: 200,
+    });
+  } catch (error) {
+    console.error(error);
+    sendResponse(res, 500, "Failed", {
+      message: error.message || "Internal server error",
+    });
+  }
+});
+userController.get("/dashboard-details", async (req, res) => {
+  try {
+    const [
+      totalUser,
+      activeUser,
+      inactiveUser,
+      totalCategory,
+      activeCategory,
+      inactiveCategory,
+      totalSubCategory,
+      activeSubCategory,
+      inactiveSubCategory,
+      totalBooking,
+      activeBooking,
+      bookingRequest,
+      bookingCompleted,
+      totalServices,
+      totalRepair,
+      totalInstallation,
+    ] = await Promise.all([
+      User.countDocuments({}),
+      User.countDocuments({ profileStatus: "completed" }),
+      User.countDocuments({ profileStatus: "incompleted" }),
+
+      Category.countDocuments({}),
+      Category.countDocuments({ status: true }),
+      Category.countDocuments({ status: false }),
+
+      SubCategory.countDocuments({}),
+      SubCategory.countDocuments({ status: true }),
+      SubCategory.countDocuments({ status: false }),
+
+      Booking.countDocuments({}),
+      Booking.countDocuments({ bookingStatus: "venderAssigned" }),
+      Booking.countDocuments({ bookingStatus: "orderPlaced" }),
+      Booking.countDocuments({ bookingStatus: "bookingCompleted" }),
+
+      service.countDocuments({}),
+      repair.countDocuments({}),
+      installation.countDocuments({}),
+    ]);
+
+    // **Last 15 Days Booking Count Logic**
+    const last15Days = await Booking.aggregate([
+      {
+        $match: {
+          createdAt: {
+            $gte: moment().subtract(15, "days").startOf("day").toDate(),
+          },
+        },
+      },
+      {
+        $group: {
+          _id: { $dateToString: { format: "%Y-%m-%d", date: "$createdAt" } },
+          noOfBookings: { $sum: 1 },
+        },
+      },
+      { $sort: { _id: 1 } },
+    ]);
+
+    let bookingsLast15Days = [];
+    for (let i = 14; i >= 0; i--) {
+      let dateObj = moment().subtract(i, "days");
+      let formattedDate = dateObj.format("Do MMM"); // "1st Jan" format
+      let mongoDate = dateObj.format("YYYY-MM-DD"); // MongoDB ke format ke liye
+
+      let bookingData = last15Days.find((b) => b._id === mongoDate); // Compare in same format
+
+      bookingsLast15Days.push({
+        date: formattedDate, // "1st Jan"
+        noOfBookings: bookingData ? bookingData.noOfBookings : 0,
+      });
+    }
+
+    sendResponse(res, 200, "Success", {
+      message: "Dashboard details retrieved successfully",
+      data: {
+        users: { totalUser, activeUser, inactiveUser },
+        categories: { totalCategory, activeCategory, inactiveCategory },
+        subCategories: { totalSubCategory, activeSubCategory, inactiveSubCategory },
+        bookings: { totalBooking, activeBooking, bookingRequest, bookingCompleted },
+        services: { totalServices, totalRepair, totalInstallation },
+        last15DaysBookings: bookingsLast15Days, // Reverse for ascending order
+      },
+      statusCode: 200,
+    });
+  } catch (error) {
+    console.error(error);
+    sendResponse(res, 500, "Failed", {
+      message: error.message || "Internal server error",
+      statusCode: 500,
     });
   }
 });
