@@ -121,7 +121,32 @@ supportController.post("/add-details", async (req, res) => {
     });
   }
 });
+supportController.put("/update-details", async (req, res) => {
+  try {
+    const id = req.body._id;
+    const support = await Support.findById(id);
+    if (!support) {
+      return sendResponse(res, 404, "Failed", {
+        message: "Support not found",
+        statusCode: 403,
+      });
+    }
+    const updateSupport = await Support.findByIdAndUpdate(id, req.body, {
+      new: true,
+    });
 
-
+    sendResponse(res, 200, "Success", {
+      message: "Support updated successfully!",
+      data: updateSupport,
+      statusCode: 200,
+    });
+  } catch (error) {
+    console.error(error);
+    sendResponse(res, 500, "Failed", {
+      message: error.message || "Internal server error",
+      statusCode: 500,
+    });
+  }
+});
 
 module.exports = supportController;
