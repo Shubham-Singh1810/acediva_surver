@@ -17,6 +17,7 @@ const jwt = require("jsonwebtoken");
 const cloudinary = require("../utils/cloudinary");
 const upload = require("../utils/multer");
 const moment = require("moment");
+const Support = require("../model/support.Schema");
 
 userController.post("/send-otp", async (req, res) => {
   try {
@@ -489,7 +490,7 @@ userController.get("/dashboard-details", async (req, res) => {
         noOfBookings: bookingData ? bookingData.noOfBookings : 0,
       });
     }
-
+    const support = await Support.findOne({})
     sendResponse(res, 200, "Success", {
       message: "Dashboard details retrieved successfully",
       data: {
@@ -498,6 +499,7 @@ userController.get("/dashboard-details", async (req, res) => {
         subCategories: { totalSubCategory, activeSubCategory, inactiveSubCategory },
         bookings: { totalBooking, activeBooking, bookingRequest, bookingCompleted },
         services: { totalServices, totalRepair, totalInstallation },
+        support:support,
         last15DaysBookings: bookingsLast15Days, // Reverse for ascending order
       },
       statusCode: 200,

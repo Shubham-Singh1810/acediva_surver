@@ -83,7 +83,7 @@ supportController.delete("/delete-faq/:id", async (req, res) => {
      }
      await Faq.findByIdAndDelete(id);
      sendResponse(res, 200, "Success", {
-       message: "Faq  deleted successfully!",
+       message: "Faq deleted successfully!",
        statusCode: 200,
      });
    } catch (error) {
