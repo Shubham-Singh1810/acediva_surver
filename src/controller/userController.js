@@ -395,6 +395,27 @@ userController.post("/list", async (req, res) => {
     });
   }
 });
+userController.get("/details/:id", async (req, res) => {
+  try {
+    const { id } = req.params;
+    const userDetails = await User.findOne({_id:id});
+    if (!userDetails) {
+      return sendResponse(res, 404, "Failed", {
+        message: "User not found",
+      });
+    }
+    sendResponse(res, 200, "Success", {
+      message: "User details retrived Successfully",
+      data:userDetails,
+      statusCode: 200,
+    });
+  } catch (error) {
+    console.error(error);
+    sendResponse(res, 500, "Failed", {
+      message: error.message || "Internal server error",
+    });
+  }
+});
 userController.delete("/delete/:id", async (req, res) => {
   try {
     const { id } = req.params;
