@@ -78,6 +78,11 @@ const bookingSchema = mongoose.Schema({
     type: String,
     required: true
   },
+  venderId: {
+    type: mongoose.Schema.Types.ObjectId,
+    ref: "Vender",
+    required: true,
+  }, 
 });
 
 bookingSchema.plugin(timestamps);

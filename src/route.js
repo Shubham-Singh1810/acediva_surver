@@ -10,6 +10,7 @@ const bookingController = require("./controller/bookingController");
 const bannerController = require("./controller/bannerController");
 const addressController = require("./controller/addressController");
 const supportController = require("./controller/supportController");
+const venderController = require("./controller/venderController");
 
 router.use("/user", userController);
 router.use("/category", categoryController);
@@ -21,6 +22,7 @@ router.use("/booking", bookingController);
 router.use("/banner", bannerController);
 router.use("/address", addressController);
 router.use("/support", supportController);
+router.use("/vender", venderController);
 
 
 module.exports = router;

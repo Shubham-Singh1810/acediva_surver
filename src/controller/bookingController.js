@@ -28,21 +28,23 @@ bookingController.post("/create", async (req, res) => {
 bookingController.post("/list", async (req, res) => {
   try {
     const bookingList = await Booking.find(req.body).populate({
-      path: "userId", 
+      path: "userId",
+    }).populate({
+      path: "venderId",
     });
 
     // Use Promise.all to handle async operations inside map()
     const updatedList = await Promise.all(
       bookingList.map(async (v) => {
-        if(v?.serviceType=="service"){
+        if (v?.serviceType == "service") {
           const serviceData = await Service.findOne({ _id: v.serviceId });
           return { ...v.toObject(), serviceData };
         }
-        if(v?.serviceType=="repair"){
+        if (v?.serviceType == "repair") {
           const serviceData = await Repair.findOne({ _id: v.serviceId });
           return { ...v.toObject(), serviceData };
         }
-        if(v?.serviceType=="installation"){
+        if (v?.serviceType == "installation") {
           const serviceData = await Installation.findOne({ _id: v.serviceId });
           return { ...v.toObject(), serviceData };
         }
@@ -80,8 +82,6 @@ bookingController.post("/list", async (req, res) => {
     });
   }
 });
-
-
 bookingController.get("/my-list/:id", async (req, res) => {
   try {
     const { id } = req.params;
@@ -149,6 +149,68 @@ bookingController.get("/cancel/:id", async (req, res) => {
         statusCode: 200,
       });
     }
+  } catch (error) {
+    console.error(error);
+    sendResponse(res, 500, "Failed", {
+      message: error.message || "Internal server error",
+      statusCode: 500,
+    });
+  }
+});
+bookingController.post("/assign-vender/:id", async (req, res) => {
+  try {
+    const { id } = req.params;
+    const bookingData = await Booking.findOne({ _id: id });
+    if (!bookingData) {
+      sendResponse(res, 200, "Success", {
+        message: "Booking not found!",
+        data: bookingData,
+        statusCode: 200,
+      });
+    }
+    const updatedBooking = await Booking.findByIdAndUpdate(
+      id,
+      { venderId: req.body.venderId, bookingStatus:"venderAssigned" },
+      {
+        new: true, 
+      }
+    );
+    sendResponse(res, 200, "Success", {
+      message: "Vender assigned successfully!",
+      data: updatedBooking,
+      statusCode: 200,
+    });
+  } catch (error) {
+    console.error(error);
+    sendResponse(res, 500, "Failed", {
+      message: error.message || "Internal server error",
+      statusCode: 500,
+    });
+  }
+});
+bookingController.post("/mark-done/:id", async (req, res) => {
+  try {
+    const { id } = req.params;
+    const bookingData = await Booking.findOne({ _id: id });
+    if (!bookingData) {
+      sendResponse(res, 200, "Success", {
+        message: "Booking not found!",
+        data: bookingData,
+        statusCode: 200,
+      });
+    }
+    const updatedBooking = await Booking.findByIdAndUpdate(
+      id,
+      {  bookingStatus:"bookingCompleted" },
+      {
+        new: true, 
+      }
+    );
+    sendResponse(res, 200, "Success", {
+      message: "Booking marked as completed",
+      data: updatedBooking,
+      statusCode: 200,
+    });
   } catch (error) {
     console.error(error);
     sendResponse(res, 500, "Failed", {
