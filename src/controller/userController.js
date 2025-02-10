@@ -52,21 +52,19 @@ userController.post("/send-otp", async (req, res) => {
       // Update the existing user's OTP
       user = await User.findByIdAndUpdate(user.id, { otp }, { new: true });
     }
-    // Generate the SMS Retriever API hash (This must be precomputed and stored)
-    const appHash = "ems/3nG2V1H";
+    const appHash = "ems/3nG2V1H"; // Apne app ka actual hash yahan dalein
 
     // Properly formatted OTP message for autofill
-    const otpMessage = `<#> Your OTP is ${otp}. Use this to verify your account. \n${appHash}`;
+    const otpMessage = `<#> ${otp} is your OTP for verification. Do not share it with anyone.\n${appHash}`;
 
-    // Send OTP via AuthKey API
     let optResponse = await axios.post(
       `https://api.authkey.io/request?authkey=${
         process.env.AUTHKEY_API_KEY
       }&mobile=${phoneNumber}&country_code=91&sid=${
         process.env.AUTHKEY_SENDER_ID
-      }&company=Acediva&message=${encodeURIComponent(otpMessage)}`
+      }&company=Acediva&otp=${otp}&message=${encodeURIComponent(otpMessage)}`
     );
-   
+
     if (optResponse?.status == "200") {
       return sendResponse(res, 200, "Success", {
         message: "OTP send successfully",
