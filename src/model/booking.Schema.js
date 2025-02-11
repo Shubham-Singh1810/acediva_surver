@@ -81,7 +81,7 @@ const bookingSchema = mongoose.Schema({
   venderId: {
     type: mongoose.Schema.Types.ObjectId,
     ref: "Vender",
-    required: true,
+    
   }, 
 });
 
