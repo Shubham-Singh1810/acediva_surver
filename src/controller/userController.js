@@ -271,6 +271,7 @@ userController.get("/get-wish-list/:userId", async (req, res) => {
                   rate: populatedItem.rate,
                   distance: populatedItem.distance,
                   status: populatedItem.status,
+                  isFavourite:true
                 }
               : null,
           };
